@@ -1,3 +1,5 @@
-<div class="bg-blue p-20 text-white">
-	<h1>Login Page</h1>
-</div>
+<script lang="ts">
+	import LoginForm from '$lib/features/login/components/LoginForm.svelte';
+</script>
+
+<LoginForm />
