@@ -1,13 +1,18 @@
 import { betterAuth } from 'better-auth';
 import { Pool } from 'pg';
+import { DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_DATABASE } from '$env/static/private';
 
 const poolConfig = {
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT),
-    database: process.env.DB_DATABASE,
+    user: DB_USER,
+    password: DB_PASSWORD,
+    host: DB_HOST,
+    port: Number(DB_PORT),
+    database: DB_DATABASE,
 };
+
+console.log('======================')
+console.log(poolConfig);
+console.log('======================')
 
 export const auth = betterAuth({
     emailAndPassword: {
@@ -15,7 +20,9 @@ export const auth = betterAuth({
     },
     database: new Pool(poolConfig),
     advanced: {
-        generateId: false,
+        database: {
+            generateId: false,
+        }
     },
     user: {
         modelName: 'users',
