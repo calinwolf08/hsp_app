@@ -5,6 +5,15 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit(), devtoolsJson()],
+	optimizeDeps: {
+		include: [
+			'@testing-library/svelte',
+			'tailwind-merge',
+			'@lucide/svelte',
+			'tailwind-variants',
+			'clsx'
+		]
+	},
 	test: {
 		expect: { requireAssertions: true },
 		projects: [
@@ -16,7 +25,8 @@ export default defineConfig({
 					browser: {
 						enabled: true,
 						provider: 'playwright',
-						instances: [{ browser: 'chromium' }]
+						instances: [{ browser: 'chromium' }],
+						headless: true
 					},
 					include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
 					exclude: ['src/lib/server/**'],
