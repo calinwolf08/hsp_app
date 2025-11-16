@@ -29,7 +29,8 @@ describe('ContinueLearningCard', () => {
 		user: 'user-1',
 		course: 'course-1',
 		isActive: true,
-		source: 'direct',
+		enrollmentSource: 'direct',
+		enrolledAt: '2024-01-15',
 		createdAt: '2024-01-15',
 		updatedAt: '2024-01-15'
 	};
@@ -39,7 +40,7 @@ describe('ContinueLearningCard', () => {
 		user: 'user-1',
 		course: 'course-1',
 		status: 'in-progress',
-		completionPercentage: 65,
+		startedAt: '2024-01-15',
 		createdAt: '2024-01-15',
 		updatedAt: '2024-01-20'
 	};

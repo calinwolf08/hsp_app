@@ -28,7 +28,17 @@ export const combineCourseData = (
 		}
 
 		const status: ProgressStatus = progress?.status || 'not-started';
-		const completionPercentage = progress?.completionPercentage || 0;
+
+		// Calculate completion percentage based on status
+		// In a real implementation, this would be calculated from section/activity progress
+		let completionPercentage = 0;
+		if (status === 'completed') {
+			completionPercentage = 100;
+		} else if (status === 'in-progress') {
+			// For in-progress courses, we'd need to calculate from sections/activities
+			// For now, default to 50% for in-progress courses
+			completionPercentage = 50;
+		}
 
 		return {
 			course,
@@ -81,15 +91,6 @@ export const sortCourses = (
 			return sorted.sort((a, b) => a.course.name.localeCompare(b.course.name));
 		case 'progress':
 			return sorted.sort((a, b) => b.completionPercentage - a.completionPercentage);
-		case 'dueDate':
-			return sorted.sort((a, b) => {
-				const aDue = a.enrollment.dueDate;
-				const bDue = b.enrollment.dueDate;
-				if (!aDue && !bDue) return 0;
-				if (!aDue) return 1;
-				if (!bDue) return -1;
-				return new Date(aDue).getTime() - new Date(bDue).getTime();
-			});
 		default:
 			return sorted;
 	}

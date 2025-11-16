@@ -47,8 +47,7 @@ export const dashboardCopy = {
 			options: {
 				recent: 'Recently Accessed',
 				title: 'Title (A-Z)',
-				progress: 'Progress',
-				dueDate: 'Due Date'
+				progress: 'Progress'
 			}
 		},
 		filter: {

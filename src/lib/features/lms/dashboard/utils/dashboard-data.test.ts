@@ -59,7 +59,8 @@ describe('Dashboard Data Utils', () => {
 			user: 'user-1',
 			course: 'course-1',
 			isActive: true,
-			source: 'direct',
+			enrollmentSource: 'direct',
+			enrolledAt: '2024-01-15',
 			createdAt: '2024-01-15',
 			updatedAt: '2024-01-15'
 		},
@@ -68,8 +69,8 @@ describe('Dashboard Data Utils', () => {
 			user: 'user-1',
 			course: 'course-2',
 			isActive: true,
-			source: 'direct',
-			dueDate: '2024-06-01',
+			enrollmentSource: 'direct',
+			enrolledAt: '2024-01-10',
 			createdAt: '2024-01-10',
 			updatedAt: '2024-01-10'
 		},
@@ -78,7 +79,8 @@ describe('Dashboard Data Utils', () => {
 			user: 'user-1',
 			course: 'course-3',
 			isActive: true,
-			source: 'direct',
+			enrollmentSource: 'direct',
+			enrolledAt: '2024-01-05',
 			createdAt: '2024-01-05',
 			updatedAt: '2024-01-05'
 		}
@@ -90,7 +92,7 @@ describe('Dashboard Data Utils', () => {
 			user: 'user-1',
 			course: 'course-1',
 			status: 'in-progress',
-			completionPercentage: 50,
+			startedAt: '2024-01-15',
 			createdAt: '2024-01-15',
 			updatedAt: '2024-01-20'
 		},
@@ -99,7 +101,8 @@ describe('Dashboard Data Utils', () => {
 			user: 'user-1',
 			course: 'course-2',
 			status: 'completed',
-			completionPercentage: 100,
+			startedAt: '2024-01-10',
+			completedAt: '2024-01-18',
 			createdAt: '2024-01-10',
 			updatedAt: '2024-01-18'
 		}
@@ -222,13 +225,6 @@ describe('Dashboard Data Utils', () => {
 			expect(sorted[0].completionPercentage).toBe(100);
 			expect(sorted[1].completionPercentage).toBe(50);
 			expect(sorted[2].completionPercentage).toBe(0);
-		});
-
-		it('should sort by due date (soonest first)', () => {
-			const sorted = sortCourses(dashboardCourses, 'dueDate');
-
-			expect(sorted[0].course.id).toBe('course-2'); // has due date
-			expect(sorted[1].course.id).toMatch(/course-[13]/); // no due date
 		});
 
 		it('should not mutate original array', () => {

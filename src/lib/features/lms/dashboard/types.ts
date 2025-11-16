@@ -21,7 +21,7 @@ export type DashboardStats = {
 	overallCompletionPercentage: number;
 };
 
-export type SortOption = 'recent' | 'title' | 'progress' | 'dueDate';
+export type SortOption = 'recent' | 'title' | 'progress';
 export type FilterOption = 'all' | 'in-progress' | 'completed' | 'not-started';
 
 export type FilterOptions = {
