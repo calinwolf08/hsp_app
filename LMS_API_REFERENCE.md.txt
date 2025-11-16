@@ -1,0 +1,1122 @@
+# LMS Collections - PayloadCMS API Reference
+
+Complete reference for accessing LMS collections in your SvelteKit application.
+
+## Table of Contents
+
+- [Architecture Overview](#architecture-overview)
+- [Content Collections](#content-collections)
+- [Enrollment Collections](#enrollment-collections)
+- [Progress Collections](#progress-collections)
+- [Common API Patterns](#common-api-patterns)
+- [Access Control Logic](#access-control-logic)
+- [Example Use Cases](#example-use-cases)
+
+---
+
+## Architecture Overview
+
+### Collection Types
+
+**Content Collections** (Read-only for users)
+- LearningPaths → Bundles → Modules → Courses → Sections → Activities
+
+**Enrollment Collections** (Access Control)
+- OrganizationEnrollments
+- BundleEnrollments
+- CourseEnrollments
+
+**Progress Collections** (Learning State)
+- BundleProgress
+- CourseProgress
+- SectionProgress
+- ActivityProgress
+
+### Key Concepts
+
+1. **Enrollment = Access Rights**: Multiple enrollments per user/item allowed (different sources)
+2. **Progress = Learning State**: Single record per user/item (source of truth)
+3. **isActive Field**: Controls access without deleting data
+4. **Enrollment Sources**: `direct`, `bundle`, `learning-path`
+
+---
+
+## Content Collections
+
+### LearningPaths
+
+**Collection:** `learning-paths`
+**Endpoint:** `/api/learning-paths`
+
+#### Structure
+```typescript
+{
+  id: string
+  name: string
+  internal_name: string
+  description: object // Lexical rich text
+  published: boolean
+  accessType: 'sequential' | 'automatic'
+  categories: string[] // Category IDs
+  tags: string[] // Tag IDs
+  bundles: Array<{
+    id: string
+    bundle: string // Bundle ID or populated object
+  }>
+  createdAt: string
+  updatedAt: string
+}
+```
+
+#### Fetch Learning Paths
+```typescript
+// Get all published learning paths
+const response = await fetch('/api/learning-paths?where[published][equals]=true&depth=2')
+const data = await response.json()
+
+// Response
+{
+  docs: LearningPath[],
+  totalDocs: number,
+  limit: number,
+  page: number,
+  hasNextPage: boolean,
+  hasPrevPage: boolean
+}
+```
+
+#### Fetch Single Learning Path with Bundles
+```typescript
+const response = await fetch('/api/learning-paths/{id}?depth=2')
+const learningPath = await response.json()
+
+// Populated bundles
+learningPath.bundles.forEach(b => {
+  console.log(b.bundle.name) // Bundle name
+  console.log(b.bundle.modules) // Module array
+})
+```
+
+---
+
+### Bundles
+
+**Collection:** `bundles`
+**Endpoint:** `/api/bundles`
+
+#### Structure
+```typescript
+{
+  id: string
+  name: string
+  internal_name: string
+  description: object // Lexical rich text
+  published: boolean
+  categories: string[]
+  tags: string[]
+  modules: Array<{
+    id: string
+    module: string // Module ID or populated object
+  }>
+  createdAt: string
+  updatedAt: string
+}
+```
+
+#### Fetch Bundle with Modules and Courses
+```typescript
+const response = await fetch('/api/bundles/{bundleId}?depth=3')
+const bundle = await response.json()
+
+// Access nested structure
+bundle.modules.forEach(m => {
+  const module = m.module
+  module.courses.forEach(c => {
+    console.log(c.course.name) // Course name
+  })
+})
+```
+
+---
+
+### Courses
+
+**Collection:** `courses`
+**Endpoint:** `/api/courses`
+
+#### Structure
+```typescript
+{
+  id: string
+  name: string
+  internal_name: string
+  slug: string
+  description: object // Lexical rich text
+  published: boolean
+  categories: string[]
+  tags: string[]
+  sections: Array<{
+    id: string
+    section: string // Section ID or populated object
+  }>
+  createdAt: string
+  updatedAt: string
+}
+```
+
+#### Fetch Course with Sections and Activities
+```typescript
+const response = await fetch('/api/courses/{courseId}?depth=3')
+const course = await response.json()
+
+// Access sections and activities
+course.sections.forEach(s => {
+  const section = s.section
+  console.log(section.name)
+  section.activities.forEach(a => {
+    console.log(a.activity.name)
+  })
+})
+```
+
+---
+
+### Sections
+
+**Collection:** `sections`
+**Endpoint:** `/api/sections`
+
+#### Structure
+```typescript
+{
+  id: string
+  name: string
+  internal_name: string
+  description: object // Lexical rich text
+  published: boolean
+  activities: Array<{
+    id: string
+    activity: string // Activity ID or populated object
+  }>
+  createdAt: string
+  updatedAt: string
+}
+```
+
+---
+
+### Activities
+
+**Collection:** `activities`
+**Endpoint:** `/api/activities`
+
+#### Structure
+```typescript
+{
+  id: string
+  name: string
+  internal_name: string
+  description: object // Lexical rich text
+  published: boolean
+  activityType: 'scorm' | 'survey' | 'video' | 'document'
+  // Type-specific fields
+  scormFile?: string // SCORM file ID
+  survey?: string // Survey ID
+  videoUrl?: string
+  documentUrl?: string
+  createdAt: string
+  updatedAt: string
+}
+```
+
+---
+
+## Enrollment Collections
+
+### OrganizationEnrollments
+
+**Collection:** `organization-enrollments`
+**Endpoint:** `/api/organization-enrollments`
+
+#### Structure
+```typescript
+{
+  id: string
+  organization: string // Organization ID
+  learningPath: string // LearningPath ID
+  enrolledAt: string
+  isActive: boolean
+  deactivatedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+```
+
+#### Check Organization Enrollments
+```typescript
+// Get all active learning paths for an organization
+const response = await fetch(
+  '/api/organization-enrollments?' +
+  'where[organization][equals]={orgId}&' +
+  'where[isActive][equals]=true&' +
+  'depth=1'
+)
+const { docs } = await response.json()
+
+docs.forEach(enrollment => {
+  console.log(enrollment.learningPath.name)
+})
+```
+
+#### Create Organization Enrollment
+```typescript
+const response = await fetch('/api/organization-enrollments', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    organization: organizationId,
+    learningPath: learningPathId,
+    isActive: true,
+    enrolledAt: new Date().toISOString()
+  })
+})
+
+// This automatically creates BundleEnrollments and CourseEnrollments
+// for all users in the organization via hooks
+```
+
+---
+
+### BundleEnrollments
+
+**Collection:** `bundle-enrollments`
+**Endpoint:** `/api/bundle-enrollments`
+
+#### Structure
+```typescript
+{
+  id: string
+  user: string // User ID
+  bundle: string // Bundle ID
+  isActive: boolean
+  enrolledAt: string
+  deactivatedAt?: string
+  enrollmentSource: 'direct' | 'learning-path'
+  sourceOrganization?: string // Org ID if source=learning-path
+  sourceLearningPath?: string // LP ID if source=learning-path
+  createdAt: string
+  updatedAt: string
+}
+```
+
+#### Check User's Bundle Access
+```typescript
+// Check if user has ANY active enrollment for a bundle
+const response = await fetch(
+  '/api/bundle-enrollments?' +
+  'where[user][equals]={userId}&' +
+  'where[bundle][equals]={bundleId}&' +
+  'where[isActive][equals]=true&' +
+  'limit=1'
+)
+const { docs } = await response.json()
+const hasAccess = docs.length > 0
+```
+
+#### Get All User's Active Bundle Enrollments
+```typescript
+const response = await fetch(
+  '/api/bundle-enrollments?' +
+  'where[user][equals]={userId}&' +
+  'where[isActive][equals]=true&' +
+  'depth=1'
+)
+const { docs: enrollments } = await response.json()
+
+enrollments.forEach(enrollment => {
+  console.log(enrollment.bundle.name)
+  console.log('Source:', enrollment.enrollmentSource)
+})
+```
+
+#### Create Direct Bundle Enrollment
+```typescript
+const response = await fetch('/api/bundle-enrollments', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    user: userId,
+    bundle: bundleId,
+    isActive: true,
+    enrollmentSource: 'direct',
+    enrolledAt: new Date().toISOString()
+  })
+})
+```
+
+---
+
+### CourseEnrollments
+
+**Collection:** `course-enrollments`
+**Endpoint:** `/api/course-enrollments`
+
+#### Structure
+```typescript
+{
+  id: string
+  user: string // User ID
+  course: string // Course ID
+  isActive: boolean
+  enrolledAt: string
+  deactivatedAt?: string
+  enrollmentSource: 'direct' | 'bundle' | 'learning-path'
+  sourceOrganization?: string
+  sourceLearningPath?: string
+  sourceBundle?: string
+  createdAt: string
+  updatedAt: string
+}
+```
+
+#### Check User's Course Access
+```typescript
+// Check if user has ANY active enrollment for a course
+const response = await fetch(
+  '/api/course-enrollments?' +
+  'where[user][equals]={userId}&' +
+  'where[course][equals]={courseId}&' +
+  'where[isActive][equals]=true&' +
+  'limit=1'
+)
+const { docs } = await response.json()
+const hasAccess = docs.length > 0
+```
+
+#### Get User's Enrolled Courses
+```typescript
+const response = await fetch(
+  '/api/course-enrollments?' +
+  'where[user][equals]={userId}&' +
+  'where[isActive][equals]=true&' +
+  'depth=1'
+)
+const { docs: enrollments } = await response.json()
+
+const courses = enrollments.map(e => ({
+  ...e.course,
+  enrollmentSource: e.enrollmentSource
+}))
+```
+
+---
+
+## Progress Collections
+
+### BundleProgress
+
+**Collection:** `bundle-progress`
+**Endpoint:** `/api/bundle-progress`
+
+#### Structure
+```typescript
+{
+  id: string
+  user: string // User ID
+  bundle: string // Bundle ID
+  status: 'not-started' | 'in-progress' | 'completed'
+  startedAt?: string
+  completedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+```
+
+#### Get User's Bundle Progress
+```typescript
+const response = await fetch(
+  '/api/bundle-progress?' +
+  'where[user][equals]={userId}&' +
+  'where[bundle][equals]={bundleId}&' +
+  'limit=1'
+)
+const { docs } = await response.json()
+const progress = docs[0] || null
+
+if (progress) {
+  console.log('Status:', progress.status)
+  console.log('Started:', progress.startedAt)
+}
+```
+
+#### Create or Update Bundle Progress
+```typescript
+// Check if exists first
+const checkResponse = await fetch(
+  '/api/bundle-progress?' +
+  'where[user][equals]={userId}&' +
+  'where[bundle][equals]={bundleId}&' +
+  'limit=1'
+)
+const { docs } = await checkResponse.json()
+
+if (docs.length === 0) {
+  // Create new progress
+  await fetch('/api/bundle-progress', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      user: userId,
+      bundle: bundleId,
+      status: 'in-progress',
+      startedAt: new Date().toISOString()
+    })
+  })
+} else {
+  // Update existing
+  await fetch(`/api/bundle-progress/${docs[0].id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      status: 'completed',
+      completedAt: new Date().toISOString()
+    })
+  })
+}
+```
+
+---
+
+### CourseProgress
+
+**Collection:** `course-progress`
+**Endpoint:** `/api/course-progress`
+
+#### Structure
+```typescript
+{
+  id: string
+  user: string // User ID
+  course: string // Course ID
+  status: 'not-started' | 'in-progress' | 'completed'
+  startedAt?: string
+  completedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+```
+
+#### Get User's Course Progress
+```typescript
+const response = await fetch(
+  '/api/course-progress?' +
+  'where[user][equals]={userId}&' +
+  'where[course][equals]={courseId}&' +
+  'limit=1'
+)
+const { docs } = await response.json()
+const progress = docs[0]
+```
+
+#### Mark Course as Started
+```typescript
+await fetch('/api/course-progress', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    user: userId,
+    course: courseId,
+    status: 'in-progress',
+    startedAt: new Date().toISOString()
+  })
+})
+```
+
+---
+
+### SectionProgress
+
+**Collection:** `section-progress`
+**Endpoint:** `/api/section-progress`
+
+#### Structure
+```typescript
+{
+  id: string
+  user: string // User ID
+  section: string // Section ID
+  status: 'not-started' | 'in-progress' | 'completed'
+  startedAt?: string
+  completedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+```
+
+#### Get All Section Progress for a Course
+```typescript
+// First get the course with sections
+const courseResponse = await fetch(`/api/courses/{courseId}?depth=1`)
+const course = await courseResponse.json()
+
+const sectionIds = course.sections.map(s =>
+  typeof s.section === 'string' ? s.section : s.section.id
+)
+
+// Get progress for all sections
+const progressResponse = await fetch(
+  '/api/section-progress?' +
+  'where[user][equals]={userId}&' +
+  `where[section][in]=${sectionIds.join(',')}`
+)
+const { docs: progressRecords } = await progressResponse.json()
+
+// Calculate course completion percentage
+const completed = progressRecords.filter(p => p.status === 'completed').length
+const percentage = (completed / sectionIds.length) * 100
+```
+
+---
+
+### ActivityProgress
+
+**Collection:** `activity-progress`
+**Endpoint:** `/api/activity-progress`
+
+#### Structure
+```typescript
+{
+  id: string
+  user: string // User ID
+  activity: string // Activity ID
+  status: 'not-started' | 'in-progress' | 'completed'
+  startedAt?: string
+  completedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+```
+
+#### Mark Activity as Completed
+```typescript
+// Check if exists
+const checkResponse = await fetch(
+  '/api/activity-progress?' +
+  'where[user][equals]={userId}&' +
+  'where[activity][equals]={activityId}&' +
+  'limit=1'
+)
+const { docs } = await checkResponse.json()
+
+if (docs.length === 0) {
+  // Create completed
+  await fetch('/api/activity-progress', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      user: userId,
+      activity: activityId,
+      status: 'completed',
+      startedAt: new Date().toISOString(),
+      completedAt: new Date().toISOString()
+    })
+  })
+} else {
+  // Update to completed
+  await fetch(`/api/activity-progress/${docs[0].id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      status: 'completed',
+      completedAt: new Date().toISOString()
+    })
+  })
+}
+```
+
+---
+
+## Common API Patterns
+
+### Query Parameters
+
+#### Filtering
+```typescript
+// Equals
+where[field][equals]=value
+
+// Not equals
+where[field][not_equals]=value
+
+// In array
+where[field][in]=value1,value2,value3
+
+// Greater than / Less than
+where[field][greater_than]=value
+where[field][less_than]=value
+
+// Contains (text search)
+where[field][contains]=value
+
+// AND conditions
+where[and][0][field1][equals]=value1
+where[and][1][field2][equals]=value2
+
+// OR conditions
+where[or][0][field1][equals]=value1
+where[or][1][field2][equals]=value2
+```
+
+#### Depth (Population)
+```typescript
+// Populate relationships up to 3 levels deep
+?depth=3
+
+// Example: Get course with sections and activities populated
+/api/courses/{id}?depth=2
+```
+
+#### Pagination
+```typescript
+?page=1&limit=10
+
+// Response includes:
+{
+  docs: [],
+  totalDocs: number,
+  limit: number,
+  page: number,
+  totalPages: number,
+  hasNextPage: boolean,
+  hasPrevPage: boolean,
+  nextPage: number | null,
+  prevPage: number | null
+}
+```
+
+#### Sorting
+```typescript
+?sort=createdAt // Ascending
+?sort=-createdAt // Descending
+```
+
+### Authentication
+
+All API requests require authentication. Include the session cookie or bearer token:
+
+```typescript
+// Using fetch with credentials
+const response = await fetch('/api/courses', {
+  credentials: 'include' // Includes cookies
+})
+
+// Or with bearer token
+const response = await fetch('/api/courses', {
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+})
+```
+
+---
+
+## Access Control Logic
+
+### Checking Course Access
+
+```typescript
+async function canAccessCourse(userId: string, courseId: string): Promise<boolean> {
+  const response = await fetch(
+    `/api/course-enrollments?` +
+    `where[user][equals]=${userId}&` +
+    `where[course][equals]=${courseId}&` +
+    `where[isActive][equals]=true&` +
+    `limit=1`
+  )
+  const { docs } = await response.json()
+  return docs.length > 0
+}
+```
+
+### Sequential Access Type
+
+For learning paths with `accessType: "sequential"`, implement frontend logic:
+
+```typescript
+async function getAccessibleCourse(
+  userId: string,
+  learningPathId: string
+): Promise<string | null> {
+  // Get learning path
+  const lpResponse = await fetch(`/api/learning-paths/${learningPathId}?depth=3`)
+  const learningPath = await lpResponse.json()
+
+  if (learningPath.accessType === 'automatic') {
+    // All courses accessible
+    return null // No restriction
+  }
+
+  // Sequential mode - find first incomplete course
+  for (const bundleRef of learningPath.bundles) {
+    const bundle = bundleRef.bundle
+    for (const moduleRef of bundle.modules) {
+      const module = moduleRef.module
+      for (const courseRef of module.courses) {
+        const courseId = typeof courseRef.course === 'string'
+          ? courseRef.course
+          : courseRef.course.id
+
+        // Check if course is completed
+        const progressResponse = await fetch(
+          `/api/course-progress?` +
+          `where[user][equals]=${userId}&` +
+          `where[course][equals]=${courseId}&` +
+          `limit=1`
+        )
+        const { docs } = await progressResponse.json()
+
+        if (!docs[0] || docs[0].status !== 'completed') {
+          return courseId // This is the next course to access
+        }
+      }
+    }
+  }
+
+  return null // All completed
+}
+```
+
+---
+
+## Example Use Cases
+
+### 1. User Dashboard - Show Enrolled Courses
+
+```typescript
+async function getUserDashboard(userId: string) {
+  // Get all active course enrollments
+  const enrollmentsResponse = await fetch(
+    `/api/course-enrollments?` +
+    `where[user][equals]=${userId}&` +
+    `where[isActive][equals]=true&` +
+    `depth=1`
+  )
+  const { docs: enrollments } = await enrollmentsResponse.json()
+
+  // Get progress for each course
+  const courseIds = enrollments.map(e =>
+    typeof e.course === 'string' ? e.course : e.course.id
+  )
+
+  const progressResponse = await fetch(
+    `/api/course-progress?` +
+    `where[user][equals]=${userId}&` +
+    `where[course][in]=${courseIds.join(',')}`
+  )
+  const { docs: progressRecords } = await progressResponse.json()
+
+  // Combine enrollment and progress
+  const courses = enrollments.map(enrollment => {
+    const courseId = typeof enrollment.course === 'string'
+      ? enrollment.course
+      : enrollment.course.id
+    const progress = progressRecords.find(p => p.course === courseId)
+
+    return {
+      id: courseId,
+      name: enrollment.course.name,
+      status: progress?.status || 'not-started',
+      startedAt: progress?.startedAt,
+      completedAt: progress?.completedAt,
+      enrollmentSource: enrollment.enrollmentSource
+    }
+  })
+
+  return courses
+}
+```
+
+### 2. Course Player - Load Course with Progress
+
+```typescript
+async function loadCoursePlayer(userId: string, courseId: string) {
+  // Check access
+  const hasAccess = await canAccessCourse(userId, courseId)
+  if (!hasAccess) {
+    throw new Error('Access denied')
+  }
+
+  // Get course with sections and activities
+  const courseResponse = await fetch(`/api/courses/${courseId}?depth=3`)
+  const course = await courseResponse.json()
+
+  // Get all activity IDs
+  const activityIds = []
+  course.sections.forEach(sectionRef => {
+    const section = sectionRef.section
+    section.activities.forEach(activityRef => {
+      const activityId = typeof activityRef.activity === 'string'
+        ? activityRef.activity
+        : activityRef.activity.id
+      activityIds.push(activityId)
+    })
+  })
+
+  // Get activity progress
+  const progressResponse = await fetch(
+    `/api/activity-progress?` +
+    `where[user][equals]=${userId}&` +
+    `where[activity][in]=${activityIds.join(',')}`
+  )
+  const { docs: progressRecords } = await progressResponse.json()
+
+  // Attach progress to activities
+  course.sections.forEach(sectionRef => {
+    const section = sectionRef.section
+    section.activities.forEach(activityRef => {
+      const activity = activityRef.activity
+      const activityId = typeof activity === 'string' ? activity : activity.id
+      const progress = progressRecords.find(p => p.activity === activityId)
+
+      activity.progress = progress?.status || 'not-started'
+      activity.completed = progress?.status === 'completed'
+    })
+  })
+
+  return course
+}
+```
+
+### 3. Complete Activity and Update Progress
+
+```typescript
+async function completeActivity(
+  userId: string,
+  activityId: string,
+  sectionId: string,
+  courseId: string
+) {
+  // Mark activity as completed
+  const activityProgressResponse = await fetch(
+    `/api/activity-progress?` +
+    `where[user][equals]=${userId}&` +
+    `where[activity][equals]=${activityId}&` +
+    `limit=1`
+  )
+  const { docs: activityDocs } = await activityProgressResponse.json()
+
+  if (activityDocs.length === 0) {
+    await fetch('/api/activity-progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user: userId,
+        activity: activityId,
+        status: 'completed',
+        startedAt: new Date().toISOString(),
+        completedAt: new Date().toISOString()
+      })
+    })
+  } else if (activityDocs[0].status !== 'completed') {
+    await fetch(`/api/activity-progress/${activityDocs[0].id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        status: 'completed',
+        completedAt: new Date().toISOString()
+      })
+    })
+  }
+
+  // Check if section is now complete
+  const sectionResponse = await fetch(`/api/sections/${sectionId}?depth=1`)
+  const section = await sectionResponse.json()
+
+  const sectionActivityIds = section.activities.map(a =>
+    typeof a.activity === 'string' ? a.activity : a.activity.id
+  )
+
+  const sectionProgressResponse = await fetch(
+    `/api/activity-progress?` +
+    `where[user][equals]=${userId}&` +
+    `where[activity][in]=${sectionActivityIds.join(',')}`
+  )
+  const { docs: activityProgressDocs } = await sectionProgressResponse.json()
+
+  const allActivitiesCompleted = sectionActivityIds.every(id =>
+    activityProgressDocs.some(p => p.activity === id && p.status === 'completed')
+  )
+
+  // Update section progress if all activities completed
+  if (allActivitiesCompleted) {
+    const sectionProgressCheckResponse = await fetch(
+      `/api/section-progress?` +
+      `where[user][equals]=${userId}&` +
+      `where[section][equals]=${sectionId}&` +
+      `limit=1`
+    )
+    const { docs: sectionDocs } = await sectionProgressCheckResponse.json()
+
+    if (sectionDocs.length === 0) {
+      await fetch('/api/section-progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user: userId,
+          section: sectionId,
+          status: 'completed',
+          completedAt: new Date().toISOString()
+        })
+      })
+    } else if (sectionDocs[0].status !== 'completed') {
+      await fetch(`/api/section-progress/${sectionDocs[0].id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'completed',
+          completedAt: new Date().toISOString()
+        })
+      })
+    }
+  }
+
+  // Similar logic for course progress...
+  // Check if all sections are complete and update course progress
+}
+```
+
+### 4. Purchase Course - Create Direct Enrollment
+
+```typescript
+async function purchaseCourse(userId: string, courseId: string) {
+  // Create direct course enrollment
+  const response = await fetch('/api/course-enrollments', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      user: userId,
+      course: courseId,
+      isActive: true,
+      enrollmentSource: 'direct',
+      enrolledAt: new Date().toISOString()
+    })
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to create enrollment')
+  }
+
+  return await response.json()
+}
+```
+
+### 5. Organization Admin - Enroll Organization in Learning Path
+
+```typescript
+async function enrollOrganizationInLearningPath(
+  organizationId: string,
+  learningPathId: string
+) {
+  // Create organization enrollment
+  // This automatically enrolls ALL users via hooks
+  const response = await fetch('/api/organization-enrollments', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      organization: organizationId,
+      learningPath: learningPathId,
+      isActive: true,
+      enrolledAt: new Date().toISOString()
+    })
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to create organization enrollment')
+  }
+
+  const enrollment = await response.json()
+
+  // Hooks automatically create:
+  // - BundleEnrollments for all users
+  // - CourseEnrollments for all users
+
+  return enrollment
+}
+```
+
+---
+
+## Error Handling
+
+### Common HTTP Status Codes
+
+- `200 OK` - Successful GET/PATCH
+- `201 Created` - Successful POST
+- `400 Bad Request` - Invalid data
+- `401 Unauthorized` - Not authenticated
+- `403 Forbidden` - Authenticated but no permission
+- `404 Not Found` - Resource doesn't exist
+- `500 Internal Server Error` - Server error
+
+### Example Error Response
+```typescript
+{
+  errors: [
+    {
+      message: "The following field is invalid: user",
+      data: { ... }
+    }
+  ]
+}
+```
+
+### Error Handling Pattern
+```typescript
+async function safeApiCall<T>(url: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(url, options)
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.errors?.[0]?.message || 'API request failed')
+  }
+
+  return await response.json()
+}
+```
+
+---
+
+## Performance Tips
+
+1. **Use depth wisely**: Only populate what you need
+2. **Limit results**: Use pagination to avoid large payloads
+3. **Batch queries**: Get multiple records with `where[field][in]`
+4. **Cache static content**: Learning paths, bundles, courses rarely change
+5. **Debounce progress updates**: Don't update on every activity interaction
+
+---
+
+## Summary
+
+### Access Check Flow
+```
+1. Check CourseEnrollment with isActive=true → Grant/Deny access
+2. If sequential mode → Check CourseProgress to determine available courses
+3. Load Course with depth=3 to get all content
+4. Query ActivityProgress to show completion state
+5. Update progress as user completes activities
+```
+
+### Data Relationships
+```
+User → CourseEnrollment (isActive) → Access
+User → CourseProgress (status) → Learning State
+User → SectionProgress → Granular Progress
+User → ActivityProgress → Detailed Progress
+```
+
+This architecture ensures:
+- ✅ Multiple enrollment sources supported
+- ✅ Progress preserved when access revoked
+- ✅ Single source of truth for learning state
+- ✅ Efficient queries with proper indexing
