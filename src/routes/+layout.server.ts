@@ -5,8 +5,8 @@ import { PageSlugs } from '$lib/constants';
 export const load: LayoutServerLoad = async ({ locals, url, request }) => {
 
     // Pages that don't require authentication
-    const publicRoutes = [PageSlugs.login];
-    const isPublicRoute = publicRoutes.some(route => url.pathname.startsWith(route));
+    const publicRoutes = [PageSlugs.home, PageSlugs.login];
+    const isPublicRoute = publicRoutes.some(route => url.pathname === route || url.pathname.startsWith(route));
 
     console.log('session')
     console.log(locals.session);
