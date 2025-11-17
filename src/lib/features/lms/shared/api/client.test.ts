@@ -1,9 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { apiClient, ApiClientError, handleApiError, withCredentials, buildUrl } from './client';
 
-// Mock the environment variable
+// Mock the environment variables
 vi.mock('$env/static/public', () => ({
 	PUBLIC_CMS_URL: 'http://test-cms.com'
+}));
+
+vi.mock('$env/static/private', () => ({
+	SECRET_PAYLOAD_API_KEY: 'test-api-key'
 }));
 
 describe('API Client', () => {
@@ -12,10 +16,13 @@ describe('API Client', () => {
 	});
 
 	describe('withCredentials', () => {
-		it('should add credentials and content-type header', () => {
+		it('should add credentials, content-type header, and authorization header', () => {
 			const result = withCredentials();
 			expect(result.credentials).toBe('include');
-			expect(result.headers).toEqual({ 'Content-Type': 'application/json' });
+			expect(result.headers).toEqual({
+				'Content-Type': 'application/json',
+				'Authorization': 'users API-Key test-api-key'
+			});
 		});
 
 		it('should merge with existing options', () => {
@@ -27,6 +34,7 @@ describe('API Client', () => {
 			expect(result.credentials).toBe('include');
 			expect(result.headers).toEqual({
 				'Content-Type': 'application/json',
+				'Authorization': 'users API-Key test-api-key',
 				'X-Custom': 'value'
 			});
 		});

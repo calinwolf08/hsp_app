@@ -124,7 +124,7 @@ describe('enrollment-actions utils', () => {
 					user: 'user-1',
 					course: 'course-3',
 					enrollmentSource: 'direct',
-					status: 'active'
+					isActive: true
 				})
 			);
 			expect(result).toEqual(mockEnrollment);

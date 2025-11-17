@@ -1,5 +1,6 @@
 import type { ApiError } from '../types';
 import { PUBLIC_CMS_URL } from '$env/static/public';
+import { SECRET_PAYLOAD_API_KEY } from '$env/static/private';
 
 export class ApiClientError extends Error {
 	constructor(
@@ -32,6 +33,7 @@ export const withCredentials = (options: RequestInit = {}): RequestInit => {
 		credentials: 'include',
 		headers: {
 			'Content-Type': 'application/json',
+			'Authorization': `users API-Key ${SECRET_PAYLOAD_API_KEY}`,
 			...options.headers
 		}
 	};
