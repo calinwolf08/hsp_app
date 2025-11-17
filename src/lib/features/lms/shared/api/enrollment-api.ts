@@ -85,17 +85,16 @@ export const checkBundleAccess = async (userId: string, bundleId: string): Promi
 };
 
 export const createCourseEnrollment = async (
-	userId: string,
-	courseId: string
+	data: Partial<CourseEnrollment>
 ): Promise<CourseEnrollment> => {
 	return apiClient<CourseEnrollment>(API_ENDPOINTS.COURSE_ENROLLMENTS, {
 		method: 'POST',
-		body: JSON.stringify({
-			user: userId,
-			course: courseId,
-			isActive: true,
-			enrollmentSource: 'direct',
-			enrolledAt: new Date().toISOString()
-		})
+		body: JSON.stringify(data)
+	});
+};
+
+export const deleteCourseEnrollment = async (enrollmentId: string): Promise<void> => {
+	await apiClient(`${API_ENDPOINTS.COURSE_ENROLLMENTS}/${enrollmentId}`, {
+		method: 'DELETE'
 	});
 };
