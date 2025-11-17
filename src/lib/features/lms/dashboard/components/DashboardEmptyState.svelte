@@ -24,7 +24,7 @@
 
 	const handleAction = () => {
 		if (variant === 'noCourses') {
-			window.location.href = PageSlugs.courses;
+			window.location.href = PageSlugs.catalog;
 		} else if (variant === 'noFiltered') {
 			// Clear filters - this would be handled by parent component
 			window.location.href = PageSlugs.dashboard;

@@ -4,4 +4,5 @@ export const PageSlugs = {
     forgotPassword: '/forgot-password',
     dashboard: '/dashboard',
     courses: '/courses',
+    catalog: '/catalog',
 }
