@@ -53,7 +53,7 @@ describe('API Client', () => {
 				json: async () => ({
 					errors: [{ message: 'Invalid field: name' }]
 				})
-			} as Response;
+			} as unknown as Response;
 
 			await expect(handleApiError(mockResponse)).rejects.toThrow(ApiClientError);
 			await expect(handleApiError(mockResponse)).rejects.toThrow('Invalid field: name');
@@ -67,7 +67,7 @@ describe('API Client', () => {
 				json: async () => {
 					throw new Error('Not JSON');
 				}
-			} as Response;
+			} as unknown as Response;
 
 			await expect(handleApiError(mockResponse)).rejects.toThrow('Internal Server Error');
 		});

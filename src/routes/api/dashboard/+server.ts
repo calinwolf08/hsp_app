@@ -48,7 +48,7 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 		}
 
 		// Extract course IDs and courses from enrollments
-		const courseIds = enrollments.map((e) => e.course);
+		const courseIds: (string | Course)[] = enrollments.map((e) => e.course);
 		const courses: Course[] = [];
 
 		// Fetch full course data for each enrollment

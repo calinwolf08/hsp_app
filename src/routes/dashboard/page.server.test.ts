@@ -4,6 +4,7 @@ import * as enrollmentApi from '$lib/features/lms/shared/api/enrollment-api';
 import * as progressApi from '$lib/features/lms/shared/api/progress-api';
 import * as contentApi from '$lib/features/lms/shared/api/content-api';
 import type { CourseEnrollment, CourseProgress, Course, PaginatedResponse } from '$lib/features/lms/shared/types';
+import type { DashboardData } from '$lib/features/lms/dashboard/types';
 
 vi.mock('$lib/features/lms/shared/api/enrollment-api');
 vi.mock('$lib/features/lms/shared/api/progress-api');
@@ -84,8 +85,7 @@ describe('Dashboard Page Server Load', () => {
 			limit: 10,
 			totalPages: 1,
 			page: 1,
-			pagingCounter: 1,
-			hasPrevPage: false,
+				hasPrevPage: false,
 			hasNextPage: false,
 			prevPage: null,
 			nextPage: null
@@ -93,9 +93,19 @@ describe('Dashboard Page Server Load', () => {
 
 		vi.spyOn(enrollmentApi, 'getCourseEnrollments').mockResolvedValue(enrollmentsResponse);
 		vi.spyOn(progressApi, 'getCourseProgress').mockResolvedValue(mockProgress);
-		vi.spyOn(contentApi, 'getCourses').mockResolvedValue(mockCourses);
+		vi.spyOn(contentApi, 'getCourses').mockResolvedValue({
+		docs: mockCourses,
+		totalDocs: mockCourses.length,
+		limit: 10,
+		page: 1,
+		totalPages: 1,
+		hasNextPage: false,
+		hasPrevPage: false,
+		nextPage: null,
+		prevPage: null
+	});
 
-		const result = await load(mockEvent);
+		const result = await load(mockEvent) as { dashboardData: DashboardData; error?: string };
 
 		expect(result.dashboardData).toBeDefined();
 		expect(result.dashboardData.courses).toHaveLength(1);
@@ -109,8 +119,7 @@ describe('Dashboard Page Server Load', () => {
 			limit: 10,
 			totalPages: 1,
 			page: 1,
-			pagingCounter: 1,
-			hasPrevPage: false,
+				hasPrevPage: false,
 			hasNextPage: false,
 			prevPage: null,
 			nextPage: null
@@ -122,7 +131,17 @@ describe('Dashboard Page Server Load', () => {
 		const getProgressSpy = vi
 			.spyOn(progressApi, 'getCourseProgress')
 			.mockResolvedValue(mockProgress);
-		vi.spyOn(contentApi, 'getCourses').mockResolvedValue(mockCourses);
+		vi.spyOn(contentApi, 'getCourses').mockResolvedValue({
+		docs: mockCourses,
+		totalDocs: mockCourses.length,
+		limit: 10,
+		page: 1,
+		totalPages: 1,
+		hasNextPage: false,
+		hasPrevPage: false,
+		nextPage: null,
+		prevPage: null
+	});
 
 		await load(mockEvent);
 
@@ -137,8 +156,7 @@ describe('Dashboard Page Server Load', () => {
 			limit: 10,
 			totalPages: 0,
 			page: 1,
-			pagingCounter: 1,
-			hasPrevPage: false,
+				hasPrevPage: false,
 			hasNextPage: false,
 			prevPage: null,
 			nextPage: null
@@ -146,7 +164,7 @@ describe('Dashboard Page Server Load', () => {
 
 		vi.spyOn(enrollmentApi, 'getCourseEnrollments').mockResolvedValue(emptyResponse);
 
-		const result = await load(mockEvent);
+		const result = await load(mockEvent) as { dashboardData: DashboardData; error?: string };
 
 		expect(result.dashboardData.courses).toHaveLength(0);
 		expect(result.dashboardData.stats.totalEnrolled).toBe(0);
@@ -156,7 +174,7 @@ describe('Dashboard Page Server Load', () => {
 	it('should handle API errors gracefully', async () => {
 		vi.spyOn(enrollmentApi, 'getCourseEnrollments').mockRejectedValue(new Error('API Error'));
 
-		const result = await load(mockEvent);
+		const result = await load(mockEvent) as { dashboardData: DashboardData; error?: string };
 
 		expect(result.dashboardData).toBeDefined();
 		expect(result.dashboardData.courses).toHaveLength(0);

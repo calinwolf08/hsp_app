@@ -8,13 +8,13 @@ import { createCourseEnrollment, deleteCourseEnrollment } from '../../shared/api
 export const enrollInCourse = async (
 	userId: string,
 	courseId: string,
-	source: 'direct' | 'bundle' | 'organization' = 'direct'
+	source: 'direct' | 'bundle' | 'learning-path' = 'direct'
 ): Promise<CourseEnrollment> => {
 	const enrollment = await createCourseEnrollment({
 		user: userId,
 		course: courseId,
 		enrollmentSource: source,
-		status: 'active',
+		isActive: true,
 		enrolledAt: new Date().toISOString()
 	});
 
@@ -40,7 +40,7 @@ export const checkEnrollmentStatus = (
 	enrollment?: CourseEnrollment;
 } => {
 	const enrollment = enrollments.find(
-		(e) => e.user === userId && e.course === courseId && e.status === 'active'
+		(e) => e.user === userId && e.course === courseId && e.isActive
 	);
 
 	return {
@@ -59,7 +59,7 @@ export const attachEnrollmentStatus = (
 ): CatalogCourse[] => {
 	return courses.map((course) => {
 		const enrollment = enrollments.find(
-			(e) => e.user === userId && e.course === course.id && e.status === 'active'
+			(e) => e.user === userId && e.course === course.id && e.isActive
 		);
 
 		return {
@@ -80,7 +80,7 @@ export const getEnrolledCourses = (
 	userId: string
 ): Course[] => {
 	const enrolledCourseIds = enrollments
-		.filter((e) => e.user === userId && e.status === 'active')
+		.filter((e) => e.user === userId && e.isActive)
 		.map((e) => e.course);
 
 	return courses.filter((course) => enrolledCourseIds.includes(course.id));
@@ -95,7 +95,7 @@ export const getUnenrolledCourses = (
 	userId: string
 ): Course[] => {
 	const enrolledCourseIds = enrollments
-		.filter((e) => e.user === userId && e.status === 'active')
+		.filter((e) => e.user === userId && e.isActive)
 		.map((e) => e.course);
 
 	return courses.filter((course) => !enrolledCourseIds.includes(course.id));

@@ -20,7 +20,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	try {
 		// Parse request body
 		const body = await request.json();
-		const { source = 'direct' } = body as { source?: 'direct' | 'bundle' | 'organization' };
+		const { source = 'direct' } = body as { source?: 'direct' | 'bundle' | 'learning-path' };
 
 		// Verify course exists
 		try {

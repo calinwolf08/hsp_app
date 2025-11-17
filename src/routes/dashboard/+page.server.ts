@@ -28,19 +28,22 @@ export const load: PageServerLoad = async ({ locals }) => {
 		const courseIds = enrollments.map((e) => e.course);
 
 		// Fetch all enrolled courses and progress records in parallel
-		const [courses, progressRecords] = await Promise.all([
+		const [coursesResponse, progressRecords] = await Promise.all([
 			courseIds.length > 0
 				? getCourses({
 						where: {
 							id: { in: courseIds }
 						}
 					})
-				: Promise.resolve([]),
+				: Promise.resolve({ docs: [] }),
 			// Fetch progress for each course
 			Promise.all(
 				courseIds.map((courseId) => getCourseProgress(userId, courseId).catch(() => null))
 			)
 		]);
+
+		// Extract courses from paginated response
+		const courses = Array.isArray(coursesResponse) ? coursesResponse : coursesResponse.docs;
 
 		// Filter out null progress records
 		const validProgressRecords = progressRecords.filter((p) => p !== null);

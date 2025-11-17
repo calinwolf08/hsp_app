@@ -71,7 +71,7 @@ describe('enrollment-actions utils', () => {
 			user: 'user-1',
 			course: 'course-1',
 			enrollmentSource: 'direct',
-			status: 'active',
+			isActive: true,
 			enrolledAt: '2024-01-15',
 			createdAt: '2024-01-15',
 			updatedAt: '2024-01-15'
@@ -81,7 +81,7 @@ describe('enrollment-actions utils', () => {
 			user: 'user-1',
 			course: 'course-2',
 			enrollmentSource: 'bundle',
-			status: 'active',
+			isActive: true,
 			enrolledAt: '2024-01-16',
 			createdAt: '2024-01-16',
 			updatedAt: '2024-01-16'
@@ -91,7 +91,7 @@ describe('enrollment-actions utils', () => {
 			user: 'user-2',
 			course: 'course-3',
 			enrollmentSource: 'direct',
-			status: 'active',
+			isActive: true,
 			enrolledAt: '2024-01-17',
 			createdAt: '2024-01-17',
 			updatedAt: '2024-01-17'
@@ -109,7 +109,7 @@ describe('enrollment-actions utils', () => {
 				user: 'user-1',
 				course: 'course-3',
 				enrollmentSource: 'direct',
-				status: 'active',
+				isActive: true,
 				enrolledAt: '2024-01-20',
 				createdAt: '2024-01-20',
 				updatedAt: '2024-01-20'
@@ -136,7 +136,7 @@ describe('enrollment-actions utils', () => {
 				user: 'user-1',
 				course: 'course-3',
 				enrollmentSource: 'bundle',
-				status: 'active',
+				isActive: true,
 				enrolledAt: '2024-01-20',
 				createdAt: '2024-01-20',
 				updatedAt: '2024-01-20'
@@ -195,7 +195,7 @@ describe('enrollment-actions utils', () => {
 					user: 'user-1',
 					course: 'course-3',
 					enrollmentSource: 'direct',
-					status: 'inactive',
+					isActive: false,
 					enrolledAt: '2024-01-15',
 					createdAt: '2024-01-15',
 					updatedAt: '2024-01-15'
@@ -255,7 +255,7 @@ describe('enrollment-actions utils', () => {
 					user: 'user-1',
 					course: 'course-3',
 					enrollmentSource: 'direct',
-					status: 'inactive',
+					isActive: false,
 					enrolledAt: '2024-01-15',
 					createdAt: '2024-01-15',
 					updatedAt: '2024-01-15'
@@ -295,7 +295,7 @@ describe('enrollment-actions utils', () => {
 					user: 'user-1',
 					course: 'course-3',
 					enrollmentSource: 'direct',
-					status: 'inactive',
+					isActive: false,
 					enrolledAt: '2024-01-15',
 					createdAt: '2024-01-15',
 					updatedAt: '2024-01-15'

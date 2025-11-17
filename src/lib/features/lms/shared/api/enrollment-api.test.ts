@@ -139,7 +139,7 @@ describe('Enrollment API', () => {
 			} as any;
 			mockApiClient.mockResolvedValue(mockEnrollment);
 
-			const result = await createCourseEnrollment('user-1', 'course-1');
+			const result = await createCourseEnrollment({ user: 'user-1', course: 'course-1' });
 			expect(result).toEqual(mockEnrollment);
 			expect(mockApiClient).toHaveBeenCalledWith(
 				'/api/course-enrollments',

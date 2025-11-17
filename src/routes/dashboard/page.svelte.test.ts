@@ -22,8 +22,17 @@ describe('Dashboard Page', () => {
 	};
 
 	const mockPageData: PageData = {
-		dashboardData: mockDashboardData
-	};
+		user: {
+			id: 'user-1',
+			email: 'test@example.com',
+			emailVerified: true,
+			name: 'Test User',
+			createdAt: new Date(),
+			updatedAt: new Date()
+		},
+		dashboardData: mockDashboardData,
+		error: undefined
+	} as any;
 
 	it('should render page title and description', () => {
 		render(DashboardPage, { data: mockPageData });
