@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 	import { coursePlayerCopy } from '$lib/features/lms/course-player/course-player-copy';
 	import CourseNavigation from '$lib/features/lms/course-player/components/CourseNavigation.svelte';
 	import ActivityContainer from '$lib/features/lms/course-player/components/ActivityContainer.svelte';
@@ -9,11 +10,8 @@
 	import type { NavigationItem } from '$lib/features/lms/course-player/types';
 	import { PageSlugs } from '$lib/constants';
 
-	// Get course ID from URL
-	const courseId = $derived(() => {
-		const parts = window.location.pathname.split('/');
-		return parts[2]; // /courses/[courseId]
-	});
+	// Get course ID from route params
+	const courseId = $derived($page.params.courseId);
 
 	// State
 	let course = $state<Course | null>(null);
@@ -39,7 +37,7 @@
 		error = null;
 
 		try {
-			const response = await fetch(`/api/courses/${courseId()}/content`, {
+			const response = await fetch(`/api/courses/${courseId}/content`, {
 				credentials: 'include'
 			});
 
@@ -95,7 +93,7 @@
 
 			// Fetch navigation data
 			const navResponse = await fetch(
-				`/api/courses/${courseId()}/navigation?activityId=${activityId}`,
+				`/api/courses/${courseId}/navigation?activityId=${activityId}`,
 				{ credentials: 'include' }
 			);
 
