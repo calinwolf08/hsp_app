@@ -22,8 +22,8 @@
 	let completedActivities = $state(0);
 	let totalActivities = $state(0);
 	let currentPosition = $state(0);
-	let canNext = $state(false);
-	let canPrevious = $state(false);
+	let canNavigateNext = $state(false);
+	let canNavigatePrevious = $state(false);
 	let nextActivityId = $state<string | null>(null);
 	let previousActivityId = $state<string | null>(null);
 
@@ -104,8 +104,8 @@
 
 				if (navData.currentActivity) {
 					currentPosition = navData.currentActivity.position;
-					canNext = navData.currentActivity.canNavigateNext;
-					canPrevious = navData.currentActivity.canNavigatePrevious;
+					canNavigateNext = navData.currentActivity.canNavigateNext;
+					canNavigatePrevious = navData.currentActivity.canNavigatePrevious;
 					nextActivityId = navData.currentActivity.nextActivityId;
 					previousActivityId = navData.currentActivity.previousActivityId;
 				}
@@ -157,7 +157,7 @@
 			await loadActivity(currentActivity.id);
 
 			// Move to next activity if available
-			if (canNext && nextActivityId) {
+			if (canNavigateNext && nextActivityId) {
 				setTimeout(() => {
 					loadActivity(nextActivityId);
 				}, 500);
