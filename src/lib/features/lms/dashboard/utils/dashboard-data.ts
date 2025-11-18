@@ -20,11 +20,11 @@ export const combineCourseData = (
 	courses: Course[]
 ): DashboardCourse[] => {
 	return enrollments.map((enrollment) => {
-		const course = courses.find((c) => c.id === enrollment.course);
-		const progress = progressRecords.find((p) => p.course === enrollment.course);
+		const course = courses.find((c) => c.id === enrollment.course.id);
+		const progress = progressRecords.find((p) => p.course === enrollment.course.id);
 
 		if (!course) {
-			throw new Error(`Course ${enrollment.course} not found`);
+			throw new Error(`Course ${enrollment.course.id} not found`);
 		}
 
 		const status: ProgressStatus = progress?.status || 'not-started';
