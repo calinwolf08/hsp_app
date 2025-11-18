@@ -3,6 +3,13 @@ import type { CourseProgress } from '../../shared/types';
 import type { LearningPathWithProgress } from '../types';
 
 /**
+ * Helper to extract ID from either string or Course object
+ */
+const getCourseId = (course: string | Course): string => {
+	return typeof course === 'string' ? course : course.id;
+};
+
+/**
  * Extract all course IDs from a learning path
  */
 export const extractAllCourseIds = (learningPath: LearningPath): string[] => {
@@ -64,7 +71,7 @@ export const attachProgressToPath = (
 	const progressMap = new Map<string, CourseProgress>();
 
 	for (const progress of courseProgress) {
-		progressMap.set(progress.course, progress);
+		progressMap.set(getCourseId(progress.course), progress);
 	}
 
 	return progressMap;
@@ -98,7 +105,7 @@ export const calculatePathProgress = (
 	let inProgressCourses = 0;
 
 	for (const courseId of courseIds) {
-		const progress = courseProgress.find((p) => p.course === courseId);
+		const progress = courseProgress.find((p) => getCourseId(p.course) === courseId);
 		if (progress) {
 			if (progress.status === 'completed') {
 				completedCourses++;
@@ -126,7 +133,7 @@ export const findCurrentCourse = (
 	courseProgress: CourseProgress[]
 ): Course | null => {
 	const courses = extractAllCourses(learningPath);
-	const progressMap = new Map(courseProgress.map((p) => [p.course, p]));
+	const progressMap = new Map(courseProgress.map((p) => [getCourseId(p.course), p]));
 
 	// First, look for in-progress course
 	for (const course of courses) {
@@ -155,7 +162,7 @@ export const findNextCourse = (
 	courseProgress: CourseProgress[]
 ): Course | null => {
 	const courses = extractAllCourses(learningPath);
-	const progressMap = new Map(courseProgress.map((p) => [p.course, p]));
+	const progressMap = new Map(courseProgress.map((p) => [getCourseId(p.course), p]));
 
 	// Return first not-started or not-completed course
 	for (const course of courses) {

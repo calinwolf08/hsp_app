@@ -3,6 +3,13 @@ import type { CourseProgress, SectionProgress, ActivityProgress } from '../../sh
 import type { CourseWithProgress } from '../types';
 
 /**
+ * Helper to extract ID from either string or Activity object
+ */
+const getActivityId = (activity: string | Activity): string => {
+	return typeof activity === 'string' ? activity : activity.id;
+};
+
+/**
  * Extract all activity IDs from a course
  */
 export const getActivityIds = (course: Course): string[] => {
@@ -62,7 +69,7 @@ export const organizeProgress = (
 
 	// Group progress records by section
 	for (const progress of activityProgress) {
-		const sectionId = activityToSection[progress.activity];
+		const sectionId = activityToSection[getActivityId(progress.activity)];
 		if (sectionId) {
 			if (!progressBySection[sectionId]) {
 				progressBySection[sectionId] = [];

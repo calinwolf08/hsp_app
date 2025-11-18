@@ -4,6 +4,13 @@ import type { SequentialState, CourseAccessibility } from '../types';
 import { extractAllCourses } from './learning-path-loader';
 
 /**
+ * Helper to extract ID from either string or Course object
+ */
+const getCourseId = (course: string | Course): string => {
+	return typeof course === 'string' ? course : course.id;
+};
+
+/**
  * Get sequential access state for a learning path
  */
 export const getSequentialState = (
@@ -17,7 +24,7 @@ export const getSequentialState = (
 		const courseIds = extractAllCourses(learningPath).map((c) => c.id);
 		const completedCourseIds = courseProgress
 			.filter((p) => p.status === 'completed')
-			.map((p) => p.course);
+			.map((p) => getCourseId(p.course));
 
 		return {
 			isSequential: false,
@@ -31,7 +38,7 @@ export const getSequentialState = (
 
 	// Sequential logic
 	const courses = extractAllCourses(learningPath);
-	const progressMap = new Map(courseProgress.map((p) => [p.course, p]));
+	const progressMap = new Map(courseProgress.map((p) => [getCourseId(p.course), p]));
 
 	const completedCourseIds: string[] = [];
 	const unlockedCourseIds: string[] = [];
@@ -106,7 +113,7 @@ export const markCoursesAccessibility = (
 ): CourseAccessibility[] => {
 	const state = getSequentialState(learningPath, courseProgress);
 	const courses = extractAllCourses(learningPath);
-	const progressMap = new Map(courseProgress.map((p) => [p.course, p]));
+	const progressMap = new Map(courseProgress.map((p) => [getCourseId(p.course), p]));
 
 	return courses.map((course) => {
 		const isCompleted = state.completedCourseIds.includes(course.id);

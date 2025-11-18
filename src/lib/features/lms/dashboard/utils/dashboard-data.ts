@@ -12,6 +12,13 @@ import type {
 } from '../types';
 
 /**
+ * Helper to extract ID from either string or object with id property
+ */
+const getCourseId = (course: string | Course): string => {
+	return typeof course === 'string' ? course : course.id;
+};
+
+/**
  * Combine enrollment, progress, and course data into dashboard courses
  */
 export const combineCourseData = (
@@ -20,11 +27,12 @@ export const combineCourseData = (
 	courses: Course[]
 ): DashboardCourse[] => {
 	return enrollments.map((enrollment) => {
-		const course = courses.find((c) => c.id === enrollment.course.id);
-		const progress = progressRecords.find((p) => p.course === enrollment.course.id);
+		const enrollmentCourseId = getCourseId(enrollment.course);
+		const course = courses.find((c) => c.id === enrollmentCourseId);
+		const progress = progressRecords.find((p) => getCourseId(p.course) === enrollmentCourseId);
 
 		if (!course) {
-			throw new Error(`Course ${enrollment.course.id} not found`);
+			throw new Error(`Course ${enrollmentCourseId} not found`);
 		}
 
 		const status: ProgressStatus = progress?.status || 'not-started';

@@ -9,7 +9,15 @@ import {
 	getContinueLearning
 } from '$lib/features/lms/dashboard/utils/dashboard-data';
 import type { DashboardData } from '$lib/features/lms/dashboard/types';
+import type { Course } from '$lib/features/lms/shared/types';
 import { PageSlugs } from '$lib/constants';
+
+/**
+ * Helper to extract ID from either string or Course object
+ */
+const getCourseId = (course: string | Course): string => {
+	return typeof course === 'string' ? course : course.id;
+};
 
 export const load: PageServerLoad = async ({ locals }) => {
 	// Ensure user is authenticated
@@ -25,7 +33,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		const enrollments = enrollmentsResponse.docs;
 
 		// Get unique course IDs from enrollments
-		const courseIds = enrollments.map((e) => e.course);
+		const courseIds = enrollments.map((e) => getCourseId(e.course));
 
 		// Fetch all enrolled courses and progress records in parallel
 		const [coursesResponse, progressRecords] = await Promise.all([

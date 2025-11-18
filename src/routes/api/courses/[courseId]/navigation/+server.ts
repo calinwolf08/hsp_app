@@ -13,7 +13,14 @@ import {
 	canNavigatePrevious
 } from '$lib/features/lms/course-player/utils/navigation';
 import { getActivityIds } from '$lib/features/lms/course-player/utils/course-loader';
-import type { ActivityProgress } from '$lib/features/lms/shared/types';
+import type { ActivityProgress, Activity } from '$lib/features/lms/shared/types';
+
+/**
+ * Helper to extract ID from either string or Activity object
+ */
+const getActivityId = (activity: string | Activity): string => {
+	return typeof activity === 'string' ? activity : activity.id;
+};
 
 export const GET: RequestHandler = async ({ locals, params, url }) => {
 	// Check authentication
@@ -44,7 +51,7 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 		// Get completed activity IDs
 		const completedActivityIds = activityProgress
 			.filter((p) => p.status === 'completed')
-			.map((p) => p.activity);
+			.map((p) => getActivityId(p.activity));
 
 		// Build navigation tree
 		const navigationTree = buildNavigationTree(course, currentActivityId || undefined, completedActivityIds);
