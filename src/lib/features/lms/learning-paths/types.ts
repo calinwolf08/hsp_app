@@ -1,17 +1,17 @@
-import type { LearningPath, Bundle, Module, Course } from '../shared/types';
+import type { LearningPathDepth4, BundleDepth3, ModuleDepth2, CourseDepth1 } from '../shared/types';
 import type { CourseProgress } from '../shared/types';
 
 /**
  * Learning path with attached progress data
  */
 export type LearningPathWithProgress = {
-	learningPath: LearningPath;
+	learningPath: LearningPathDepth4;
 	totalCourses: number;
 	completedCourses: number;
 	inProgressCourses: number;
 	completionPercentage: number;
-	currentCourse?: Course;
-	nextCourse?: Course;
+	currentCourse?: CourseDepth1;
+	nextCourse?: CourseDepth1;
 };
 
 /**

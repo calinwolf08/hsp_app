@@ -2,13 +2,14 @@ import type {
 	Bundle,
 	BundleDepth1,
 	BundleDepth2,
+	BundleDepth3,
 	Module,
 	ModuleDepth1,
 	ModuleDepth2,
 	Course,
 	CourseDepth1
 } from '../../shared/types';
-import { getCourseId, getModuleId, isBundleDepth1, isBundleDepth2 } from '../../shared/types/content';
+import { getCourseId, getModuleId, isBundleDepth1, isBundleDepth2, isBundleDepth3 } from '../../shared/types/content';
 import type { BundleProgress, CourseProgress } from '../../shared/types';
 import type { BundleWithProgress, ModuleWithProgress, CourseWithProgress } from '../types';
 
@@ -38,13 +39,13 @@ export const extractCourseIds = (bundle: Bundle): number[] => {
 
 /**
  * Extract all courses (full objects) from a bundle
- * Requires BundleDepth2 with courses populated (not just IDs)
+ * Requires BundleDepth3 with courses populated (not just IDs)
  */
 export const extractAllCourses = (bundle: Bundle): CourseDepth1[] => {
 	const courses: CourseDepth1[] = [];
 
-	if (!isBundleDepth2(bundle)) {
-		console.warn('extractAllCourses requires BundleDepth2');
+	if (!isBundleDepth3(bundle)) {
+		console.warn('extractAllCourses requires BundleDepth3');
 		return [];
 	}
 
@@ -52,10 +53,7 @@ export const extractAllCourses = (bundle: Bundle): CourseDepth1[] => {
 		const module = moduleItem.module;
 
 		for (const courseItem of module.courses) {
-			const course = courseItem.course;
-			if (typeof course !== 'number') {
-				courses.push(course);
-			}
+			courses.push(courseItem.course);
 		}
 	}
 
@@ -64,11 +62,11 @@ export const extractAllCourses = (bundle: Bundle): CourseDepth1[] => {
 
 /**
  * Extract all modules from a bundle
- * Requires BundleDepth1 (modules populated)
+ * Requires BundleDepth2 (modules populated as ModuleDepth1)
  */
 export const extractAllModules = (bundle: Bundle): ModuleDepth1[] => {
-	if (!isBundleDepth1(bundle)) {
-		console.warn('extractAllModules requires BundleDepth1');
+	if (!isBundleDepth2(bundle)) {
+		console.warn('extractAllModules requires BundleDepth2');
 		return [];
 	}
 
@@ -181,29 +179,41 @@ export const attachProgressToModule = (
 	module: ModuleDepth2,
 	courseProgress: CourseProgress[]
 ): ModuleWithProgress => {
-	const courses: CourseWithProgress[] = module.courses
-		.map((item) => {
-			const course = item.course;
-			if (typeof course === 'number') {
-				return null;
-			}
+	const courses: CourseWithProgress[] = module.courses.map((item) => {
+		const course = item.course;
+		const progress = courseProgress.find((p) => getCourseId(p.course) === course.id);
 
-			const progress = courseProgress.find((p) => getCourseId(p.course) === course.id);
-
-			return {
-				course,
-				progress: progress || null,
-				completionPercentage: progress?.status === 'completed' ? 100 : 0
-			};
-		})
-		.filter((c): c is CourseWithProgress => c !== null);
+		return {
+			course,
+			progress: progress || null,
+			completionPercentage: progress?.status === 'completed' ? 100 : 0
+		};
+	});
 
 	const completionPercentage = calculateModuleCompletion(module, courseProgress);
+
+	const courseIds = module.courses.map((item) => getCourseId(item.course));
+	const totalCourses = courseIds.length;
+
+	let completedCourses = 0;
+	let inProgressCourses = 0;
+
+	for (const courseId of courseIds) {
+		const progress = courseProgress.find((p) => getCourseId(p.course) === courseId);
+		if (progress?.status === 'completed') {
+			completedCourses++;
+		} else if (progress?.status === 'in-progress') {
+			inProgressCourses++;
+		}
+	}
 
 	return {
 		module,
 		courses,
-		completionPercentage
+		completionPercentage,
+		totalCourses,
+		completedCourses,
+		inProgressCourses
 	};
 };
 
@@ -211,7 +221,7 @@ export const attachProgressToModule = (
  * Build BundleWithProgress from bundle and progress data
  */
 export const buildBundleWithProgress = (
-	bundle: BundleDepth2,
+	bundle: BundleDepth3,
 	bundleProgress: BundleProgress | null,
 	courseProgress: CourseProgress[]
 ): BundleWithProgress => {
@@ -229,7 +239,6 @@ export const buildBundleWithProgress = (
 	return {
 		bundle,
 		modules,
-		progress: bundleProgress,
 		totalCourses,
 		completedCourses,
 		inProgressCourses,
@@ -240,7 +249,7 @@ export const buildBundleWithProgress = (
 /**
  * Get all courses from a bundle
  */
-export const getAllCoursesFromBundle = (bundle: BundleDepth2): CourseDepth1[] => {
+export const getAllCoursesFromBundle = (bundle: BundleDepth3): CourseDepth1[] => {
 	return extractAllCourses(bundle);
 };
 
@@ -261,7 +270,7 @@ export const bundleHasCourses = (bundle: Bundle): boolean => {
 /**
  * Get all modules with their course counts
  */
-export const getModulesWithCourseCounts = (bundle: BundleDepth2): Array<{
+export const getModulesWithCourseCounts = (bundle: BundleDepth3): Array<{
 	module: ModuleDepth2;
 	courseCount: number;
 }> => {

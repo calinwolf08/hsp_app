@@ -1,33 +1,22 @@
-import type { LearningPath, Bundle, Module, Course } from '../../shared/types';
+import type { LearningPathDepth4, BundleDepth3, ModuleDepth2, CourseDepth1, Course } from '../../shared/types';
 import type { CourseProgress } from '../../shared/types';
 import type { LearningPathWithProgress } from '../types';
-
-/**
- * Helper to extract ID from either string or Course object
- */
-const getCourseId = (course: string | Course): string => {
-	return typeof course === 'string' ? course : course.id;
-};
+import { getCourseId } from '../../shared/types/content';
 
 /**
  * Extract all course IDs from a learning path
  */
-export const extractAllCourseIds = (learningPath: LearningPath): string[] => {
-	const courseIds: string[] = [];
+export const extractAllCourseIds = (learningPath: LearningPathDepth4): number[] => {
+	const courseIds: number[] = [];
 
 	for (const bundleItem of learningPath.bundles) {
-		const bundle = typeof bundleItem.bundle === 'string' ? null : bundleItem.bundle;
-		if (!bundle) continue;
+		const bundle = bundleItem.bundle;
 
 		for (const moduleItem of bundle.modules) {
-			const module = typeof moduleItem.module === 'string' ? null : moduleItem.module;
-			if (!module) continue;
+			const module = moduleItem.module;
 
 			for (const courseItem of module.courses) {
-				const course = typeof courseItem.course === 'string' ? courseItem.id : courseItem.course;
-				if (typeof course !== 'string') {
-					courseIds.push(course.id);
-				}
+				courseIds.push(courseItem.course.id);
 			}
 		}
 	}
@@ -38,22 +27,17 @@ export const extractAllCourseIds = (learningPath: LearningPath): string[] => {
 /**
  * Extract all courses (full objects) from a learning path
  */
-export const extractAllCourses = (learningPath: LearningPath): Course[] => {
-	const courses: Course[] = [];
+export const extractAllCourses = (learningPath: LearningPathDepth4): CourseDepth1[] => {
+	const courses: CourseDepth1[] = [];
 
 	for (const bundleItem of learningPath.bundles) {
-		const bundle = typeof bundleItem.bundle === 'string' ? null : bundleItem.bundle;
-		if (!bundle) continue;
+		const bundle = bundleItem.bundle;
 
 		for (const moduleItem of bundle.modules) {
-			const module = typeof moduleItem.module === 'string' ? null : moduleItem.module;
-			if (!module) continue;
+			const module = moduleItem.module;
 
 			for (const courseItem of module.courses) {
-				const course = typeof courseItem.course === 'string' ? null : courseItem.course;
-				if (course) {
-					courses.push(course);
-				}
+				courses.push(courseItem.course);
 			}
 		}
 	}
@@ -65,10 +49,10 @@ export const extractAllCourses = (learningPath: LearningPath): Course[] => {
  * Attach progress data to learning path
  */
 export const attachProgressToPath = (
-	learningPath: LearningPath,
+	learningPath: LearningPathDepth4,
 	courseProgress: CourseProgress[]
-): Map<string, CourseProgress> => {
-	const progressMap = new Map<string, CourseProgress>();
+): Map<number, CourseProgress> => {
+	const progressMap = new Map<number, CourseProgress>();
 
 	for (const progress of courseProgress) {
 		progressMap.set(getCourseId(progress.course), progress);
@@ -81,7 +65,7 @@ export const attachProgressToPath = (
  * Calculate overall progress for a learning path
  */
 export const calculatePathProgress = (
-	learningPath: LearningPath,
+	learningPath: LearningPathDepth4,
 	courseProgress: CourseProgress[]
 ): {
 	totalCourses: number;
@@ -129,9 +113,9 @@ export const calculatePathProgress = (
  * Find the current course (first in-progress or first not started)
  */
 export const findCurrentCourse = (
-	learningPath: LearningPath,
+	learningPath: LearningPathDepth4,
 	courseProgress: CourseProgress[]
-): Course | null => {
+): CourseDepth1 | null => {
 	const courses = extractAllCourses(learningPath);
 	const progressMap = new Map(courseProgress.map((p) => [getCourseId(p.course), p]));
 
@@ -158,9 +142,9 @@ export const findCurrentCourse = (
  * Find the next course to start
  */
 export const findNextCourse = (
-	learningPath: LearningPath,
+	learningPath: LearningPathDepth4,
 	courseProgress: CourseProgress[]
-): Course | null => {
+): CourseDepth1 | null => {
 	const courses = extractAllCourses(learningPath);
 	const progressMap = new Map(courseProgress.map((p) => [getCourseId(p.course), p]));
 
@@ -179,7 +163,7 @@ export const findNextCourse = (
  * Build LearningPathWithProgress object
  */
 export const buildPathWithProgress = (
-	learningPath: LearningPath,
+	learningPath: LearningPathDepth4,
 	courseProgress: CourseProgress[]
 ): LearningPathWithProgress => {
 	const progressStats = calculatePathProgress(learningPath, courseProgress);
@@ -197,23 +181,19 @@ export const buildPathWithProgress = (
 /**
  * Get all bundles from a learning path
  */
-export const extractAllBundles = (learningPath: LearningPath): Bundle[] => {
-	return learningPath.bundles
-		.map((item) => (typeof item.bundle === 'string' ? null : item.bundle))
-		.filter((bundle): bundle is Bundle => bundle !== null);
+export const extractAllBundles = (learningPath: LearningPathDepth4): BundleDepth3[] => {
+	return learningPath.bundles.map((item) => item.bundle);
 };
 
 /**
  * Get all modules from a learning path
  */
-export const extractAllModules = (learningPath: LearningPath): Module[] => {
-	const modules: Module[] = [];
+export const extractAllModules = (learningPath: LearningPathDepth4): ModuleDepth2[] => {
+	const modules: ModuleDepth2[] = [];
 	const bundles = extractAllBundles(learningPath);
 
 	for (const bundle of bundles) {
-		const bundleModules = bundle.modules
-			.map((item) => (typeof item.module === 'string' ? null : item.module))
-			.filter((module): module is Module => module !== null);
+		const bundleModules = bundle.modules.map((item) => item.module);
 		modules.push(...bundleModules);
 	}
 
@@ -223,13 +203,10 @@ export const extractAllModules = (learningPath: LearningPath): Module[] => {
 /**
  * Get course count by bundle
  */
-export const getCourseCountByBundle = (bundle: Bundle): number => {
+export const getCourseCountByBundle = (bundle: BundleDepth3): number => {
 	let count = 0;
 	for (const moduleItem of bundle.modules) {
-		const module = typeof moduleItem.module === 'string' ? null : moduleItem.module;
-		if (module) {
-			count += module.courses.length;
-		}
+		count += moduleItem.module.courses.length;
 	}
 	return count;
 };
@@ -237,6 +214,6 @@ export const getCourseCountByBundle = (bundle: Bundle): number => {
 /**
  * Get course count by module
  */
-export const getCourseCountByModule = (module: Module): number => {
-	return module.courses.filter((item) => typeof item.course !== 'string').length;
+export const getCourseCountByModule = (module: ModuleDepth2): number => {
+	return module.courses.length;
 };

@@ -267,8 +267,25 @@ export type BundleDepth2 = {
 	createdAt: string;
 };
 
+// Bundle with modules as ModuleDepth2 (depth 3)
+export type BundleDepth3 = {
+	id: number;
+	name: string;
+	internal_name: string;
+	description: object | null; // Lexical rich text
+	published: boolean;
+	categories: string[];
+	tags: string[];
+	modules: Array<{
+		id: string; // Join table ID
+		module: ModuleDepth2;
+	}>;
+	updatedAt: string;
+	createdAt: string;
+};
+
 // Union type for any Bundle depth
-export type Bundle = BundleDepth0 | BundleDepth1 | BundleDepth2;
+export type Bundle = BundleDepth0 | BundleDepth1 | BundleDepth2 | BundleDepth3;
 
 // ============================================================================
 // Learning Path Types
@@ -313,8 +330,44 @@ export type LearningPathDepth2 = {
 	createdAt: string;
 };
 
+// LearningPath with bundles as BundleDepth2 (depth 3)
+export type LearningPathDepth3 = {
+	id: number;
+	name: string;
+	internal_name: string;
+	description: object | null; // Lexical rich text
+	published: boolean;
+	accessType: 'sequential' | 'automatic';
+	categories: string[];
+	tags: string[];
+	bundles: Array<{
+		id: string; // Join table ID
+		bundle: BundleDepth2;
+	}>;
+	updatedAt: string;
+	createdAt: string;
+};
+
+// LearningPath with bundles as BundleDepth3 (depth 4)
+export type LearningPathDepth4 = {
+	id: number;
+	name: string;
+	internal_name: string;
+	description: object | null; // Lexical rich text
+	published: boolean;
+	accessType: 'sequential' | 'automatic';
+	categories: string[];
+	tags: string[];
+	bundles: Array<{
+		id: string; // Join table ID
+		bundle: BundleDepth3;
+	}>;
+	updatedAt: string;
+	createdAt: string;
+};
+
 // Union type for any LearningPath depth
-export type LearningPath = LearningPathDepth0 | LearningPathDepth1 | LearningPathDepth2;
+export type LearningPath = LearningPathDepth0 | LearningPathDepth1 | LearningPathDepth2 | LearningPathDepth3 | LearningPathDepth4;
 
 // ============================================================================
 // Category and Tag Types
@@ -390,6 +443,10 @@ export function isBundleDepth1(bundle: Bundle): bundle is BundleDepth1 {
 }
 
 export function isBundleDepth2(bundle: Bundle): bundle is BundleDepth2 {
+	return typeof bundle === 'object' && 'name' in bundle && bundle.modules.length > 0 && typeof bundle.modules[0].module === 'object' && isModuleDepth2(bundle.modules[0].module);
+}
+
+export function isBundleDepth3(bundle: Bundle): bundle is BundleDepth3 {
 	return typeof bundle === 'object' && 'name' in bundle && bundle.modules.length > 0 && typeof bundle.modules[0].module === 'object' && isModuleDepth2(bundle.modules[0].module);
 }
 

@@ -1,11 +1,11 @@
-import type { Bundle, Module, Course } from '../shared/types';
+import type { BundleDepth3, ModuleDepth2, CourseDepth1 } from '../shared/types';
 import type { BundleProgress, CourseProgress } from '../shared/types';
 
 /**
  * Bundle with attached progress data
  */
 export type BundleWithProgress = {
-	bundle: Bundle;
+	bundle: BundleDepth3;
 	totalCourses: number;
 	completedCourses: number;
 	inProgressCourses: number;
@@ -17,7 +17,7 @@ export type BundleWithProgress = {
  * Module with progress information
  */
 export type ModuleWithProgress = {
-	module: Module;
+	module: ModuleDepth2;
 	totalCourses: number;
 	completedCourses: number;
 	inProgressCourses: number;
@@ -29,11 +29,9 @@ export type ModuleWithProgress = {
  * Course with progress for bundle display
  */
 export type CourseWithProgress = {
-	course: Course;
+	course: CourseDepth1;
 	progress: CourseProgress | null;
-	isCompleted: boolean;
-	isInProgress: boolean;
-	isNotStarted: boolean;
+	completionPercentage: number;
 };
 
 /**
