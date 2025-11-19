@@ -1,32 +1,27 @@
 import type {
-	Course,
-	Section,
-	Activity,
+	CourseDepth2,
+	SectionDepth2,
 	ActivityProgress,
 	SectionProgress,
 	CourseProgress
 } from '../../shared/types';
+import { getActivityId, getSectionId } from '../../shared/types/content';
 
 /**
  * Check if a section is complete based on activity progress
  */
 export const checkSectionComplete = (
-	section: Section,
+	section: SectionDepth2,
 	activityProgress: ActivityProgress[]
 ): boolean => {
 	// Get all activity IDs in the section
-	const activityIds = section.activities
-		.map((item) => {
-			const activity = typeof item.activity === 'string' ? null : item.activity;
-			return activity?.id;
-		})
-		.filter((id): id is string => id !== null);
+	const activityIds = section.activities.map((item) => item.activity.id);
 
 	if (activityIds.length === 0) return false;
 
 	// Check if all activities are completed
 	return activityIds.every((activityId) => {
-		const progress = activityProgress.find((p) => p.activity === activityId);
+		const progress = activityProgress.find((p) => getActivityId(p.activity) === activityId);
 		return progress?.status === 'completed';
 	});
 };
@@ -35,22 +30,17 @@ export const checkSectionComplete = (
  * Check if a course is complete based on section progress
  */
 export const checkCourseComplete = (
-	course: Course,
+	course: CourseDepth2,
 	sectionProgress: SectionProgress[]
 ): boolean => {
 	// Get all section IDs in the course
-	const sectionIds = course.sections
-		.map((item) => {
-			const section = typeof item.section === 'string' ? null : item.section;
-			return section?.id;
-		})
-		.filter((id): id is string => id !== null);
+	const sectionIds = course.sections.map((item) => item.section.id);
 
 	if (sectionIds.length === 0) return false;
 
 	// Check if all sections are completed
 	return sectionIds.every((sectionId) => {
-		const progress = sectionProgress.find((p) => p.section === sectionId);
+		const progress = sectionProgress.find((p) => getSectionId(p.section) === sectionId);
 		return progress?.status === 'completed';
 	});
 };
@@ -74,20 +64,15 @@ export const buildProgressUpdateChain = (
  * Determine if section progress should be updated based on activity completions
  */
 export const shouldUpdateSectionProgress = (
-	sectionId: string,
-	section: Section,
+	sectionId: number,
+	section: SectionDepth2,
 	activityProgress: ActivityProgress[]
 ): {
 	shouldUpdate: boolean;
 	newStatus: 'not-started' | 'in-progress' | 'completed';
 } => {
 	// Get all activity IDs in the section
-	const activityIds = section.activities
-		.map((item) => {
-			const activity = typeof item.activity === 'string' ? null : item.activity;
-			return activity?.id;
-		})
-		.filter((id): id is string => id !== null);
+	const activityIds = section.activities.map((item) => item.activity.id);
 
 	if (activityIds.length === 0) {
 		return { shouldUpdate: false, newStatus: 'not-started' };
@@ -98,7 +83,7 @@ export const shouldUpdateSectionProgress = (
 	let startedCount = 0;
 
 	for (const activityId of activityIds) {
-		const progress = activityProgress.find((p) => p.activity === activityId);
+		const progress = activityProgress.find((p) => getActivityId(p.activity) === activityId);
 		if (progress) {
 			if (progress.status === 'completed') {
 				completedCount++;
@@ -126,20 +111,15 @@ export const shouldUpdateSectionProgress = (
  * Determine if course progress should be updated based on section completions
  */
 export const shouldUpdateCourseProgress = (
-	courseId: string,
-	course: Course,
+	courseId: number,
+	course: CourseDepth2,
 	sectionProgress: SectionProgress[]
 ): {
 	shouldUpdate: boolean;
 	newStatus: 'not-started' | 'in-progress' | 'completed';
 } => {
 	// Get all section IDs in the course
-	const sectionIds = course.sections
-		.map((item) => {
-			const section = typeof item.section === 'string' ? null : item.section;
-			return section?.id;
-		})
-		.filter((id): id is string => id !== null);
+	const sectionIds = course.sections.map((item) => item.section.id);
 
 	if (sectionIds.length === 0) {
 		return { shouldUpdate: false, newStatus: 'not-started' };
@@ -150,7 +130,7 @@ export const shouldUpdateCourseProgress = (
 	let startedCount = 0;
 
 	for (const sectionId of sectionIds) {
-		const progress = sectionProgress.find((p) => p.section === sectionId);
+		const progress = sectionProgress.find((p) => getSectionId(p.section) === sectionId);
 		if (progress) {
 			if (progress.status === 'completed') {
 				completedCount++;
@@ -178,20 +158,15 @@ export const shouldUpdateCourseProgress = (
  * Get completion percentage for a section based on activity progress
  */
 export const getSectionCompletionPercentage = (
-	section: Section,
+	section: SectionDepth2,
 	activityProgress: ActivityProgress[]
 ): number => {
-	const activityIds = section.activities
-		.map((item) => {
-			const activity = typeof item.activity === 'string' ? null : item.activity;
-			return activity?.id;
-		})
-		.filter((id): id is string => id !== null);
+	const activityIds = section.activities.map((item) => item.activity.id);
 
 	if (activityIds.length === 0) return 0;
 
 	const completedCount = activityIds.filter((activityId) => {
-		const progress = activityProgress.find((p) => p.activity === activityId);
+		const progress = activityProgress.find((p) => getActivityId(p.activity) === activityId);
 		return progress?.status === 'completed';
 	}).length;
 
@@ -202,20 +177,15 @@ export const getSectionCompletionPercentage = (
  * Get completion percentage for a course based on section progress
  */
 export const getCourseCompletionPercentage = (
-	course: Course,
+	course: CourseDepth2,
 	sectionProgress: SectionProgress[]
 ): number => {
-	const sectionIds = course.sections
-		.map((item) => {
-			const section = typeof item.section === 'string' ? null : item.section;
-			return section?.id;
-		})
-		.filter((id): id is string => id !== null);
+	const sectionIds = course.sections.map((item) => item.section.id);
 
 	if (sectionIds.length === 0) return 0;
 
 	const completedCount = sectionIds.filter((sectionId) => {
-		const progress = sectionProgress.find((p) => p.section === sectionId);
+		const progress = sectionProgress.find((p) => getSectionId(p.section) === sectionId);
 		return progress?.status === 'completed';
 	}).length;
 
