@@ -4,19 +4,13 @@ import type {
 	CourseProgress,
 	ProgressStatus
 } from '../../shared/types';
+import { getCourseId } from '../../shared/types/content';
 import type {
 	DashboardCourse,
 	DashboardStats,
 	SortOption,
 	FilterOption
 } from '../types';
-
-/**
- * Helper to extract ID from either string or object with id property
- */
-const getCourseId = (course: string | Course): string => {
-	return typeof course === 'string' ? course : course.id;
-};
 
 /**
  * Combine enrollment, progress, and course data into dashboard courses

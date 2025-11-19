@@ -6,7 +6,7 @@ export type ProgressStatus = 'not-started' | 'in-progress' | 'completed';
 export type BundleProgress = {
 	id: string;
 	user: string;
-	bundle: string | Bundle;
+	bundle: number | Bundle;
 	status: ProgressStatus;
 	startedAt?: string;
 	completedAt?: string;
@@ -17,7 +17,7 @@ export type BundleProgress = {
 export type CourseProgress = {
 	id: string;
 	user: string;
-	course: string | Course;
+	course: number | Course;
 	status: ProgressStatus;
 	startedAt?: string;
 	completedAt?: string;
@@ -28,7 +28,7 @@ export type CourseProgress = {
 export type SectionProgress = {
 	id: string;
 	user: string;
-	section: string | Section;
+	section: number | Section;
 	status: ProgressStatus;
 	startedAt?: string;
 	completedAt?: string;
@@ -39,7 +39,7 @@ export type SectionProgress = {
 export type ActivityProgress = {
 	id: string;
 	user: string;
-	activity: string | Activity;
+	activity: number | Activity;
 	status: ProgressStatus;
 	startedAt?: string;
 	completedAt?: string;

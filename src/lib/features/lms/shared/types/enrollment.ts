@@ -6,7 +6,7 @@ export type EnrollmentSource = 'direct' | 'bundle' | 'learning-path';
 export type OrganizationEnrollment = {
 	id: string;
 	organization: string;
-	learningPath: string | LearningPath;
+	learningPath: number | LearningPath;
 	enrolledAt: string;
 	isActive: boolean;
 	deactivatedAt?: string;
@@ -17,13 +17,13 @@ export type OrganizationEnrollment = {
 export type BundleEnrollment = {
 	id: string;
 	user: string;
-	bundle: string | Bundle;
+	bundle: number | Bundle;
 	isActive: boolean;
 	enrolledAt: string;
 	deactivatedAt?: string;
 	enrollmentSource: 'direct' | 'learning-path';
 	sourceOrganization?: string;
-	sourceLearningPath?: string | LearningPath;
+	sourceLearningPath?: number | LearningPath;
 	createdAt: string;
 	updatedAt: string;
 };
@@ -31,14 +31,14 @@ export type BundleEnrollment = {
 export type CourseEnrollment = {
 	id: string;
 	user: string;
-	course: string | Course;
+	course: number | Course;
 	isActive: boolean;
 	enrolledAt: string;
 	deactivatedAt?: string;
 	enrollmentSource: EnrollmentSource;
 	sourceOrganization?: string;
-	sourceLearningPath?: string | LearningPath;
-	sourceBundle?: string | Bundle;
+	sourceLearningPath?: number | LearningPath;
+	sourceBundle?: number | Bundle;
 	createdAt: string;
 	updatedAt: string;
 };

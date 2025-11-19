@@ -1,30 +1,43 @@
-import type { Course, Section, Activity } from '../../shared/types';
+import type {
+	Course,
+	CourseDepth3,
+	CourseDepth4,
+	Section,
+	SectionDepth2,
+	SectionDepth3,
+	Activity,
+	ActivityDepth1,
+	ActivityDepth2
+} from '../../shared/types';
+import {
+	getActivityId,
+	getSectionId,
+	isCourseDepth3,
+	isCourseDepth4,
+	isActivityDepth1,
+	isActivityDepth2
+} from '../../shared/types/content';
 import type { CourseProgress, SectionProgress, ActivityProgress } from '../../shared/types';
 import type { CourseWithProgress } from '../types';
 
 /**
- * Helper to extract ID from either string or Activity object
- */
-const getActivityId = (activity: string | Activity): string => {
-	return typeof activity === 'string' ? activity : activity.id;
-};
-
-/**
  * Extract all activity IDs from a course
+ * Only works with CourseDepth3 or higher (sections must be populated)
  */
-export const getActivityIds = (course: Course): string[] => {
-	const activityIds: string[] = [];
+export const getActivityIds = (course: Course): number[] => {
+	const activityIds: number[] = [];
+
+	// Type guard to ensure we have populated sections
+	if (!isCourseDepth3(course) && !isCourseDepth4(course)) {
+		console.warn('getActivityIds requires CourseDepth3 or CourseDepth4');
+		return [];
+	}
 
 	for (const sectionItem of course.sections) {
-		const section = typeof sectionItem.section === 'string' ? null : sectionItem.section;
-		if (!section) continue;
-
+		const section = sectionItem.section;
+		// Section is already populated (SectionDepth2 or SectionDepth3)
 		for (const activityItem of section.activities) {
-			const activity =
-				typeof activityItem.activity === 'string' ? activityItem.id : activityItem.activity;
-			if (typeof activity !== 'string') {
-				activityIds.push(activity.id);
-			}
+			activityIds.push(getActivityId(activityItem.activity));
 		}
 	}
 
@@ -34,13 +47,12 @@ export const getActivityIds = (course: Course): string[] => {
 /**
  * Extract all section IDs from a course
  */
-export const getSectionIds = (course: Course): string[] => {
-	return course.sections
-		.map((item) => {
-			const section = typeof item.section === 'string' ? null : item.section;
-			return section?.id;
-		})
-		.filter((id): id is string => id !== null && id !== undefined);
+export const getSectionIds = (course: Course): number[] => {
+	if (typeof course === 'number') {
+		return [];
+	}
+
+	return course.sections.map((item) => getSectionId(item.section));
 };
 
 /**
@@ -48,28 +60,27 @@ export const getSectionIds = (course: Course): string[] => {
  */
 export const organizeProgress = (
 	activityProgress: ActivityProgress[],
-	sections: Array<{ id: string; section: string | Section }>
-): Record<string, ActivityProgress[]> => {
-	const progressBySection: Record<string, ActivityProgress[]> = {};
+	sections: Array<{ id: string; section: number | Section }>
+): Record<number, ActivityProgress[]> => {
+	const progressBySection: Record<number, ActivityProgress[]> = {};
 
 	// Build mapping of activity ID to section ID
-	const activityToSection: Record<string, string> = {};
+	const activityToSection: Record<number, number> = {};
 	for (const sectionItem of sections) {
-		const section = typeof sectionItem.section === 'string' ? null : sectionItem.section;
-		if (!section) continue;
+		const section = sectionItem.section;
+		if (typeof section === 'number') continue;
 
+		const sectionId = section.id;
 		for (const activityItem of section.activities) {
-			const activity =
-				typeof activityItem.activity === 'string' ? activityItem.id : activityItem.activity;
-			if (typeof activity !== 'string') {
-				activityToSection[activity.id] = section.id;
-			}
+			const activityId = getActivityId(activityItem.activity);
+			activityToSection[activityId] = sectionId;
 		}
 	}
 
 	// Group progress records by section
 	for (const progress of activityProgress) {
-		const sectionId = activityToSection[getActivityId(progress.activity)];
+		const activityId = getActivityId(progress.activity);
+		const sectionId = activityToSection[activityId];
 		if (sectionId) {
 			if (!progressBySection[sectionId]) {
 				progressBySection[sectionId] = [];
@@ -146,11 +157,18 @@ export const getTotalSections = (course: Course): number => {
 
 /**
  * Get activities in a specific section
+ * Section must be SectionDepth2 or SectionDepth3 (activities populated)
  */
-export const getActivitiesInSection = (section: Section): Activity[] => {
+export const getActivitiesInSection = (section: Section): (ActivityDepth1 | ActivityDepth2)[] => {
+	if (typeof section === 'number') {
+		return [];
+	}
+
 	return section.activities
-		.map((item) => (typeof item.activity === 'string' ? null : item.activity))
-		.filter((activity): activity is Activity => activity !== null);
+		.map((item) => item.activity)
+		.filter((activity): activity is ActivityDepth1 | ActivityDepth2 =>
+			isActivityDepth1(activity) || isActivityDepth2(activity)
+		);
 };
 
 /**
@@ -158,16 +176,18 @@ export const getActivitiesInSection = (section: Section): Activity[] => {
  */
 export const findSectionByActivityId = (
 	course: Course,
-	activityId: string
-): Section | null => {
+	activityId: number
+): SectionDepth2 | SectionDepth3 | null => {
+	if (!isCourseDepth3(course) && !isCourseDepth4(course)) {
+		console.warn('findSectionByActivityId requires CourseDepth3 or CourseDepth4');
+		return null;
+	}
+
 	for (const sectionItem of course.sections) {
-		const section = typeof sectionItem.section === 'string' ? null : sectionItem.section;
-		if (!section) continue;
+		const section = sectionItem.section;
 
 		for (const activityItem of section.activities) {
-			const activity =
-				typeof activityItem.activity === 'string' ? activityItem.id : activityItem.activity;
-			if (typeof activity !== 'string' && activity.id === activityId) {
+			if (getActivityId(activityItem.activity) === activityId) {
 				return section;
 			}
 		}

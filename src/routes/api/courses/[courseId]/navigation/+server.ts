@@ -13,14 +13,8 @@ import {
 	canNavigatePrevious
 } from '$lib/features/lms/course-player/utils/navigation';
 import { getActivityIds } from '$lib/features/lms/course-player/utils/course-loader';
+import { getActivityId } from '$lib/features/lms/shared/types/content';
 import type { ActivityProgress, Activity } from '$lib/features/lms/shared/types';
-
-/**
- * Helper to extract ID from either string or Activity object
- */
-const getActivityId = (activity: string | Activity): string => {
-	return typeof activity === 'string' ? activity : activity.id;
-};
 
 export const GET: RequestHandler = async ({ locals, params, url }) => {
 	// Check authentication
@@ -29,8 +23,9 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 	}
 
 	const userId = locals.session.user.id;
-	const { courseId } = params;
-	const currentActivityId = url.searchParams.get('activityId');
+	const courseId = Number(params.courseId);
+	const activityIdParam = url.searchParams.get('activityId');
+	const currentActivityId = activityIdParam ? Number(activityIdParam) : null;
 
 	try {
 		// Check if user has access to this course
@@ -54,14 +49,14 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 			.map((p) => getActivityId(p.activity));
 
 		// Build navigation tree
-		const navigationTree = buildNavigationTree(course, currentActivityId || undefined, completedActivityIds);
+		const navigationTree = buildNavigationTree(course, currentActivityId ?? undefined, completedActivityIds);
 
 		// Get total count
 		const totalActivities = getTotalActivityCount(course);
 
 		// Get current activity info if provided
 		let currentActivityInfo = null;
-		if (currentActivityId) {
+		if (currentActivityId !== null) {
 			const position = getActivityPosition(course, currentActivityId);
 			const nextActivity = getNextActivity(course, currentActivityId);
 			const previousActivity = getPreviousActivity(course, currentActivityId);
@@ -72,8 +67,8 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 				activityId: currentActivityId,
 				position,
 				totalActivities,
-				nextActivityId: nextActivity?.id || null,
-				previousActivityId: previousActivity?.id || null,
+				nextActivityId: nextActivity !== null ? getActivityId(nextActivity) : null,
+				previousActivityId: previousActivity !== null ? getActivityId(previousActivity) : null,
 				canNavigateNext: canNext,
 				canNavigatePrevious: canPrevious
 			};
