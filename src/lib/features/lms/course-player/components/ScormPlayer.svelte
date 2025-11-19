@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import Scorm12API from 'scorm-again/src/Scorm12API';
+	import { Scorm12API } from 'scorm-again';
 	import type { ScormFile } from '../../shared/types';
 
 	interface Props {
