@@ -1,12 +1,13 @@
 import type {
 	Course,
+	CourseDepth1,
 	CourseEnrollment,
 	CourseProgress,
 	ProgressStatus
 } from '../shared/types';
 
 export type DashboardCourse = {
-	course: Course;
+	course: CourseDepth1;
 	enrollment: CourseEnrollment;
 	progress: CourseProgress | null;
 	completionPercentage: number;

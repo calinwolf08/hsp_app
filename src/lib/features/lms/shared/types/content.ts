@@ -375,6 +375,33 @@ export function isCourseDepth4(course: Course): course is CourseDepth4 {
 	return typeof course === 'object' && 'name' in course && course.sections.length > 0 && typeof course.sections[0].section === 'object' && isSectionDepth3(course.sections[0].section);
 }
 
+// Module type guards
+export function isModuleDepth1(module: Module): module is ModuleDepth1 {
+	return typeof module === 'object' && 'name' in module && module.courses.length > 0 && typeof module.courses[0].course === 'number';
+}
+
+export function isModuleDepth2(module: Module): module is ModuleDepth2 {
+	return typeof module === 'object' && 'name' in module && module.courses.length > 0 && typeof module.courses[0].course === 'object' && isCourseDepth1(module.courses[0].course);
+}
+
+// Bundle type guards
+export function isBundleDepth1(bundle: Bundle): bundle is BundleDepth1 {
+	return typeof bundle === 'object' && 'name' in bundle && bundle.modules.length > 0 && typeof bundle.modules[0].module === 'object' && isModuleDepth1(bundle.modules[0].module);
+}
+
+export function isBundleDepth2(bundle: Bundle): bundle is BundleDepth2 {
+	return typeof bundle === 'object' && 'name' in bundle && bundle.modules.length > 0 && typeof bundle.modules[0].module === 'object' && isModuleDepth2(bundle.modules[0].module);
+}
+
+// LearningPath type guards
+export function isLearningPathDepth1(learningPath: LearningPath): learningPath is LearningPathDepth1 {
+	return typeof learningPath === 'object' && 'name' in learningPath && learningPath.bundles.length > 0 && typeof learningPath.bundles[0].bundle === 'number';
+}
+
+export function isLearningPathDepth2(learningPath: LearningPath): learningPath is LearningPathDepth2 {
+	return typeof learningPath === 'object' && 'name' in learningPath && learningPath.bundles.length > 0 && typeof learningPath.bundles[0].bundle === 'object' && isBundleDepth1(learningPath.bundles[0].bundle);
+}
+
 // Helper functions to extract IDs
 export function getActivityId(activity: Activity): number {
 	return typeof activity === 'number' ? activity : activity.id;

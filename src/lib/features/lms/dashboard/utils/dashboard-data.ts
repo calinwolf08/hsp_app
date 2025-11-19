@@ -1,5 +1,6 @@
 import type {
 	Course,
+	CourseDepth1,
 	CourseEnrollment,
 	CourseProgress,
 	ProgressStatus
@@ -14,11 +15,12 @@ import type {
 
 /**
  * Combine enrollment, progress, and course data into dashboard courses
+ * Requires courses to be at least CourseDepth1 (basic course info populated)
  */
 export const combineCourseData = (
 	enrollments: CourseEnrollment[],
 	progressRecords: CourseProgress[],
-	courses: Course[]
+	courses: CourseDepth1[]
 ): DashboardCourse[] => {
 	return enrollments.map((enrollment) => {
 		const enrollmentCourseId = getCourseId(enrollment.course);
