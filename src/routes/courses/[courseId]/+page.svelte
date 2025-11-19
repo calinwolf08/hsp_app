@@ -103,7 +103,7 @@
 				completedActivities = navData.completedCount;
 
 				if (navData.currentActivity) {
-					currentPosition = navData.currentActivity.position;
+					currentPosition = navData.currentActivity.position ?? 0;
 					canNavigateNext = navData.currentActivity.canNavigateNext;
 					canNavigatePrevious = navData.currentActivity.canNavigatePrevious;
 					nextActivityId = navData.currentActivity.nextActivityId;
