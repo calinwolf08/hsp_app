@@ -19,11 +19,11 @@ export type LearningPathWithProgress = {
  */
 export type SequentialState = {
 	isSequential: boolean;
-	currentCourseId: string | null;
-	nextCourseId: string | null;
-	lockedCourseIds: string[];
-	unlockedCourseIds: string[];
-	completedCourseIds: string[];
+	currentCourseId: number | null;
+	nextCourseId: number | null;
+	lockedCourseIds: number[];
+	unlockedCourseIds: number[];
+	completedCourseIds: number[];
 };
 
 /**
@@ -45,7 +45,7 @@ export type PathNavigationItem = {
  * Course accessibility info in sequential learning path
  */
 export type CourseAccessibility = {
-	courseId: string;
+	courseId: number;
 	isAccessible: boolean;
 	isCompleted: boolean;
 	isInProgress: boolean;

@@ -1,20 +1,14 @@
-import type { LearningPath, Course } from '../../shared/types';
+import type { LearningPathDepth4, CourseDepth1 } from '../../shared/types';
 import type { CourseProgress } from '../../shared/types';
 import type { SequentialState, CourseAccessibility } from '../types';
 import { extractAllCourses } from './learning-path-loader';
-
-/**
- * Helper to extract ID from either string or Course object
- */
-const getCourseId = (course: string | Course): string => {
-	return typeof course === 'string' ? course : course.id;
-};
+import { getCourseId } from '../../shared/types/content';
 
 /**
  * Get sequential access state for a learning path
  */
 export const getSequentialState = (
-	learningPath: LearningPath,
+	learningPath: LearningPathDepth4,
 	courseProgress: CourseProgress[]
 ): SequentialState => {
 	const isSequential = learningPath.accessType === 'sequential';
@@ -40,11 +34,11 @@ export const getSequentialState = (
 	const courses = extractAllCourses(learningPath);
 	const progressMap = new Map(courseProgress.map((p) => [getCourseId(p.course), p]));
 
-	const completedCourseIds: string[] = [];
-	const unlockedCourseIds: string[] = [];
-	const lockedCourseIds: string[] = [];
-	let currentCourseId: string | null = null;
-	let nextCourseId: string | null = null;
+	const completedCourseIds: number[] = [];
+	const unlockedCourseIds: number[] = [];
+	const lockedCourseIds: number[] = [];
+	let currentCourseId: number | null = null;
+	let nextCourseId: number | null = null;
 
 	for (let i = 0; i < courses.length; i++) {
 		const course = courses[i];
@@ -91,9 +85,9 @@ export const getSequentialState = (
  * Get next available course (first unlocked, not completed)
  */
 export const getNextAvailableCourse = (
-	learningPath: LearningPath,
+	learningPath: LearningPathDepth4,
 	courseProgress: CourseProgress[]
-): Course | null => {
+): CourseDepth1 | null => {
 	const state = getSequentialState(learningPath, courseProgress);
 
 	if (!state.nextCourseId) {
@@ -108,7 +102,7 @@ export const getNextAvailableCourse = (
  * Mark courses with their accessibility status
  */
 export const markCoursesAccessibility = (
-	learningPath: LearningPath,
+	learningPath: LearningPathDepth4,
 	courseProgress: CourseProgress[]
 ): CourseAccessibility[] => {
 	const state = getSequentialState(learningPath, courseProgress);
@@ -137,8 +131,8 @@ export const markCoursesAccessibility = (
  * Check if a specific course is accessible in sequential mode
  */
 export const isAccessibleInSequence = (
-	courseId: string,
-	learningPath: LearningPath,
+	courseId: number,
+	learningPath: LearningPathDepth4,
 	courseProgress: CourseProgress[]
 ): boolean => {
 	const state = getSequentialState(learningPath, courseProgress);
@@ -156,9 +150,9 @@ export const isAccessibleInSequence = (
  * Get the previous course in sequence
  */
 export const getPreviousCourse = (
-	courseId: string,
-	learningPath: LearningPath
-): Course | null => {
+	courseId: number,
+	learningPath: LearningPathDepth4
+): CourseDepth1 | null => {
 	const courses = extractAllCourses(learningPath);
 	const currentIndex = courses.findIndex((c) => c.id === courseId);
 
@@ -172,7 +166,7 @@ export const getPreviousCourse = (
 /**
  * Get the next course in sequence (regardless of lock status)
  */
-export const getNextCourse = (courseId: string, learningPath: LearningPath): Course | null => {
+export const getNextCourse = (courseId: number, learningPath: LearningPathDepth4): CourseDepth1 | null => {
 	const courses = extractAllCourses(learningPath);
 	const currentIndex = courses.findIndex((c) => c.id === courseId);
 
@@ -187,7 +181,7 @@ export const getNextCourse = (courseId: string, learningPath: LearningPath): Cou
  * Calculate progress percentage for sequential learning path
  */
 export const calculateSequentialProgress = (
-	learningPath: LearningPath,
+	learningPath: LearningPathDepth4,
 	courseProgress: CourseProgress[]
 ): number => {
 	const courses = extractAllCourses(learningPath);
@@ -205,7 +199,7 @@ export const calculateSequentialProgress = (
  * Check if learning path is completed
  */
 export const isLearningPathComplete = (
-	learningPath: LearningPath,
+	learningPath: LearningPathDepth4,
 	courseProgress: CourseProgress[]
 ): boolean => {
 	const courses = extractAllCourses(learningPath);
@@ -217,7 +211,7 @@ export const isLearningPathComplete = (
 /**
  * Get course index in learning path (0-based)
  */
-export const getCourseIndex = (courseId: string, learningPath: LearningPath): number => {
+export const getCourseIndex = (courseId: number, learningPath: LearningPathDepth4): number => {
 	const courses = extractAllCourses(learningPath);
 	return courses.findIndex((c) => c.id === courseId);
 };
@@ -225,6 +219,6 @@ export const getCourseIndex = (courseId: string, learningPath: LearningPath): nu
 /**
  * Get total course count in learning path
  */
-export const getTotalCourseCount = (learningPath: LearningPath): number => {
+export const getTotalCourseCount = (learningPath: LearningPathDepth4): number => {
 	return extractAllCourses(learningPath).length;
 };
