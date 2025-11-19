@@ -145,8 +145,8 @@
 						<label class="flex items-center cursor-pointer">
 							<input
 								type="checkbox"
-								checked={selectedCategories.includes(category.id)}
-								onchange={() => toggleCategory(category.id)}
+								checked={selectedCategories.includes(category.id.toString())}
+								onchange={() => toggleCategory(category.id.toString())}
 								class="w-4 h-4 text-blue border-gray-300 rounded focus:ring-blue"
 								aria-label={catalogCopy.accessibility.categoryCheckbox.replace('{{categoryName}}', category.name)}
 							/>
@@ -188,8 +188,8 @@
 						<label class="flex items-center cursor-pointer">
 							<input
 								type="checkbox"
-								checked={selectedTags.includes(tag.id)}
-								onchange={() => toggleTag(tag.id)}
+								checked={selectedTags.includes(tag.id.toString())}
+								onchange={() => toggleTag(tag.id.toString())}
 								class="w-4 h-4 text-blue border-gray-300 rounded focus:ring-blue"
 								aria-label={catalogCopy.accessibility.tagCheckbox.replace('{{tagName}}', tag.name)}
 							/>

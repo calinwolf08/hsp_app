@@ -1,4 +1,4 @@
-import type { Course, CourseEnrollment } from '../../shared/types';
+import type { CourseDepth1, CourseEnrollment } from '../../shared/types';
 import type { CatalogCourse } from '../types';
 import { createCourseEnrollment, deleteCourseEnrollment } from '../../shared/api/enrollment-api';
 
@@ -7,12 +7,12 @@ import { createCourseEnrollment, deleteCourseEnrollment } from '../../shared/api
  */
 export const enrollInCourse = async (
 	userId: string,
-	courseId: string,
+	courseId: string | number,
 	source: 'direct' | 'bundle' | 'learning-path' = 'direct'
 ): Promise<CourseEnrollment> => {
 	const enrollment = await createCourseEnrollment({
 		user: userId,
-		course: courseId,
+		course: courseId.toString(),
 		enrollmentSource: source,
 		isActive: true,
 		enrolledAt: new Date().toISOString()
@@ -33,14 +33,15 @@ export const unenrollFromCourse = async (enrollmentId: string): Promise<void> =>
  */
 export const checkEnrollmentStatus = (
 	userId: string,
-	courseId: string,
+	courseId: string | number,
 	enrollments: CourseEnrollment[]
 ): {
 	isEnrolled: boolean;
 	enrollment?: CourseEnrollment;
 } => {
+	const courseIdStr = courseId.toString();
 	const enrollment = enrollments.find(
-		(e) => e.user === userId && e.course === courseId && e.isActive
+		(e) => e.user === userId && e.course === courseIdStr && e.isActive
 	);
 
 	return {
@@ -53,13 +54,14 @@ export const checkEnrollmentStatus = (
  * Attach enrollment status to courses for catalog display
  */
 export const attachEnrollmentStatus = (
-	courses: Course[],
+	courses: CourseDepth1[],
 	enrollments: CourseEnrollment[],
 	userId: string
 ): CatalogCourse[] => {
 	return courses.map((course) => {
+		const courseIdStr = course.id.toString();
 		const enrollment = enrollments.find(
-			(e) => e.user === userId && e.course === course.id && e.isActive
+			(e) => e.user === userId && e.course === courseIdStr && e.isActive
 		);
 
 		return {
@@ -75,30 +77,30 @@ export const attachEnrollmentStatus = (
  * Get all courses user is enrolled in
  */
 export const getEnrolledCourses = (
-	courses: Course[],
+	courses: CourseDepth1[],
 	enrollments: CourseEnrollment[],
 	userId: string
-): Course[] => {
+): CourseDepth1[] => {
 	const enrolledCourseIds = enrollments
 		.filter((e) => e.user === userId && e.isActive)
 		.map((e) => e.course);
 
-	return courses.filter((course) => enrolledCourseIds.includes(course.id));
+	return courses.filter((course) => enrolledCourseIds.includes(course.id.toString()));
 };
 
 /**
  * Get all courses user is not enrolled in
  */
 export const getUnenrolledCourses = (
-	courses: Course[],
+	courses: CourseDepth1[],
 	enrollments: CourseEnrollment[],
 	userId: string
-): Course[] => {
+): CourseDepth1[] => {
 	const enrolledCourseIds = enrollments
 		.filter((e) => e.user === userId && e.isActive)
 		.map((e) => e.course);
 
-	return courses.filter((course) => !enrolledCourseIds.includes(course.id));
+	return courses.filter((course) => !enrolledCourseIds.includes(course.id.toString()));
 };
 
 /**
