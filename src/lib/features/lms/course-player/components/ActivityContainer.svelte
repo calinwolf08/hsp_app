@@ -6,18 +6,21 @@
 		ActivityProgress,
 		ScormFile
 	} from '../../shared/types';
-	import { isActivityDepth2 } from '../../shared/types/content';
+	import { isActivityDepth2, getActivityId } from '../../shared/types/content';
 	import { coursePlayerCopy } from '../course-player-copy';
+	import ScormPlayer from './ScormPlayer.svelte';
 
 	interface Props {
 		activity: Activity;
 		progress: ActivityProgress | null;
+		userId: string;
 		onComplete?: () => Promise<void>;
 	}
 
-	let { activity, progress, onComplete }: Props = $props();
+	let { activity, progress, userId, onComplete }: Props = $props();
 
 	let completing = $state(false);
+	let savingProgress = $state(false);
 
 	const handleMarkComplete = async () => {
 		if (!onComplete || completing) return;
@@ -30,6 +33,50 @@
 			alert(coursePlayerCopy.errors.progressSaveFailed);
 		} finally {
 			completing = false;
+		}
+	};
+
+	/**
+	 * Handle SCORM progress updates
+	 */
+	const handleScormProgressUpdate = async (scormData: object) => {
+		if (savingProgress) return;
+
+		savingProgress = true;
+		try {
+			const activityId = getActivityId(activity);
+
+			// Call API to save SCORM progress
+			const response = await fetch(`/api/activities/${activityId}/progress`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					status: 'in-progress',
+					scormData
+				})
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to save SCORM progress');
+			}
+
+			console.log('[ActivityContainer] SCORM progress saved');
+		} catch (err) {
+			console.error('[ActivityContainer] Failed to save SCORM progress:', err);
+		} finally {
+			savingProgress = false;
+		}
+	};
+
+	/**
+	 * Handle SCORM completion
+	 */
+	const handleScormComplete = async () => {
+		console.log('[ActivityContainer] SCORM activity completed');
+		if (onComplete) {
+			await onComplete();
 		}
 	};
 
@@ -127,32 +174,43 @@
 						{coursePlayerCopy.labels.completed}
 					</div>
 				{/if}
+
+				<!-- Saving indicator -->
+				{#if savingProgress}
+					<div
+						class="inline-flex items-center gap-2 mt-2 px-3 py-1 bg-blue/10 text-blue rounded-full text-sm"
+					>
+						<div
+							class="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-blue"
+						></div>
+						Saving progress...
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>
 
 	<!-- Activity Content Area -->
 	<div
-		class="flex-1 overflow-auto p-6"
+		class="flex-1 overflow-hidden"
 		role="main"
 		aria-label={coursePlayerCopy.accessibility.activityPlayer}
 	>
 		{#if content.hasPlayer}
 			<!-- SCORM Player -->
 			{#if activityType === 'scorm' && scormFile}
-				<div class="h-full w-full">
-					<iframe
-						src={scormFile.extractedPath}
-						title={activityName}
-						class="w-full h-full border-0 rounded-lg"
-						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-						sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
-					></iframe>
-				</div>
+				<ScormPlayer
+					{scormFile}
+					activityId={getActivityId(activity)}
+					{userId}
+					initialScormData={progress?.scormData ?? null}
+					onProgressUpdate={handleScormProgressUpdate}
+					onComplete={handleScormComplete}
+				/>
 			{:else}
 				<!-- Placeholder for other activity types or when SCORM not loaded -->
 				<div
-					class="h-full flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300"
+					class="h-full flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 m-6"
 				>
 					<div class="text-center p-8">
 						<span class="text-6xl mb-4 block">{content.icon}</span>

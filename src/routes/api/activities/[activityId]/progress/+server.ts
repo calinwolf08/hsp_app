@@ -10,14 +10,15 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	}
 
 	const userId = locals.session.user.id;
-	const { activityId } = params;
+	const activityId = Number(params.activityId);
 
 	try {
 		// Parse request body
 		const body = await request.json();
-		const { status, completionData } = body as {
+		const { status, completionData, scormData } = body as {
 			status: ProgressStatus;
 			completionData?: Record<string, unknown>;
+			scormData?: object | null;
 		};
 
 		// Validate status
@@ -25,8 +26,13 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			return error(400, 'Invalid status');
 		}
 
-		// Update activity progress
-		const activityProgress = await updateActivityProgress(userId, activityId, status);
+		// Update activity progress with SCORM data
+		const activityProgress = await updateActivityProgress(
+			userId,
+			activityId.toString(),
+			status,
+			scormData
+		);
 
 		// Note: Completion cascade (section/course updates) should happen in a background job
 		// or via hooks in the PayloadCMS backend. For now, we just update the activity.

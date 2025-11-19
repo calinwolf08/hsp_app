@@ -43,6 +43,7 @@ export type ActivityProgress = {
 	status: ProgressStatus;
 	startedAt?: string;
 	completedAt?: string;
+	scormData?: object | null; // SCORM CMI data stored as JSON
 	createdAt: string;
 	updatedAt: string;
 };

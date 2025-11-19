@@ -9,9 +9,17 @@
 	import type { Course, Activity, ActivityProgress } from '$lib/features/lms/shared/types';
 	import type { NavigationItem } from '$lib/features/lms/course-player/types';
 	import { PageSlugs } from '$lib/constants';
+	import type { PageData } from './$types';
+
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	// Get course ID from route params
 	const courseId = $derived($page.params.courseId);
+	const userId = $derived(data.user?.id ?? '');
 
 	// State
 	let course = $state<Course | null>(null);
@@ -228,6 +236,7 @@
 					<ActivityContainer
 						activity={currentActivity}
 						progress={currentActivityProgress}
+						{userId}
 						onComplete={handleMarkComplete}
 					/>
 				</div>

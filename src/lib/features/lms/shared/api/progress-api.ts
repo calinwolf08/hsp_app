@@ -108,7 +108,8 @@ export const getMultipleProgress = async (
 export const updateActivityProgress = async (
 	userId: string,
 	activityId: string,
-	status: ProgressStatus
+	status: ProgressStatus,
+	scormData?: object | null
 ): Promise<ActivityProgress> => {
 	// Check if progress exists
 	const existing = await getActivityProgress(userId, activityId);
@@ -122,7 +123,8 @@ export const updateActivityProgress = async (
 				...(status === 'in-progress' && !existing.startedAt
 					? { startedAt: new Date().toISOString() }
 					: {}),
-				...(status === 'completed' ? { completedAt: new Date().toISOString() } : {})
+				...(status === 'completed' ? { completedAt: new Date().toISOString() } : {}),
+				...(scormData !== undefined ? { scormData } : {})
 			})
 		});
 	} else {
@@ -136,7 +138,8 @@ export const updateActivityProgress = async (
 				...(status === 'in-progress' || status === 'completed'
 					? { startedAt: new Date().toISOString() }
 					: {}),
-				...(status === 'completed' ? { completedAt: new Date().toISOString() } : {})
+				...(status === 'completed' ? { completedAt: new Date().toISOString() } : {}),
+				...(scormData !== undefined ? { scormData } : {})
 			})
 		});
 	}
