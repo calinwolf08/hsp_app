@@ -6,7 +6,7 @@
 	import ActivityContainer from '$lib/features/lms/course-player/components/ActivityContainer.svelte';
 	import NavigationControls from '$lib/features/lms/course-player/components/NavigationControls.svelte';
 	import CourseProgressBar from '$lib/features/lms/course-player/components/CourseProgressBar.svelte';
-	import type { Course, Activity, ActivityProgress } from '$lib/features/lms/shared/types';
+	import type { CourseDepth3, ActivityDepth2, ActivityProgress } from '$lib/features/lms/shared/types';
 	import type { NavigationItem } from '$lib/features/lms/course-player/types';
 	import { PageSlugs } from '$lib/constants';
 	import type { PageData } from './$types';
@@ -21,10 +21,12 @@
 	const courseId = $derived($page.params.courseId);
 	const userId = $derived(data.user?.id ?? '');
 
-	// State
-	let course = $state<Course | null>(null);
+	// State - using specific depth types based on API responses
+	// /api/courses/${courseId}/content returns CourseDepth3
+	let course = $state<CourseDepth3 | null>(null);
 	let navigationTree = $state<NavigationItem[]>([]);
-	let currentActivity = $state<Activity | null>(null);
+	// /api/activities/${activityId} returns ActivityDepth2
+	let currentActivity = $state<ActivityDepth2 | null>(null);
 	let currentActivityProgress = $state<ActivityProgress | null>(null);
 	let completionPercentage = $state(0);
 	let completedActivities = $state(0);
@@ -60,17 +62,18 @@
 
 			// Get first activity if no specific activity is selected
 			if (course && course.sections.length > 0) {
-				const firstSection = typeof course.sections[0].section === 'string'
+				const firstSectionItem = course.sections[0];
+				const firstSection = typeof firstSectionItem.section === 'string'
 					? null
-					: course.sections[0].section;
+					: firstSectionItem.section;
 
-				if (firstSection && firstSection.activities.length > 0) {
+				if (firstSection && typeof firstSection !== 'number' && firstSection.activities.length > 0) {
 					const firstActivityItem = firstSection.activities[0];
 					const firstActivity = typeof firstActivityItem.activity === 'string'
 						? null
 						: firstActivityItem.activity;
 
-					if (firstActivity) {
+					if (firstActivity && typeof firstActivity !== 'number') {
 						await loadActivity(firstActivity.id);
 					}
 				}
@@ -84,7 +87,7 @@
 	};
 
 	// Load specific activity
-	const loadActivity = async (activityId: string) => {
+	const loadActivity = async (activityId: string | number) => {
 		try {
 			// Fetch activity content
 			const activityResponse = await fetch(`/api/activities/${activityId}`, {
@@ -125,7 +128,7 @@
 	};
 
 	// Navigation handlers
-	const handleNavigate = (activityId: string) => {
+	const handleNavigate = (activityId: string | number) => {
 		loadActivity(activityId);
 	};
 

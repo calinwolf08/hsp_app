@@ -9,8 +9,8 @@
 		completionPercentage: number;
 		completedActivities: number;
 		totalActivities: number;
-		currentActivityId?: string;
-		onNavigate: (activityId: string) => void;
+		currentActivityId?: string | number;
+		onNavigate: (activityId: string | number) => void;
 	}
 
 	let {
