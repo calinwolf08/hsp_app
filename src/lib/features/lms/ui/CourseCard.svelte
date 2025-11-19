@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import type { Course, ProgressStatus } from '../shared/types';
+	import type { CourseDepth1, ProgressStatus } from '../shared/types';
 	import ProgressBar from './ProgressBar.svelte';
 	import StatusBadge from './StatusBadge.svelte';
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 
 	type Props = {
-		course: Course;
+		course: CourseDepth1;
 		progress?: number;
 		status?: ProgressStatus;
 		href: string;
