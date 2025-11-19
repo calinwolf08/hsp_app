@@ -12,7 +12,7 @@ export const enrollInCourse = async (
 ): Promise<CourseEnrollment> => {
 	const enrollment = await createCourseEnrollment({
 		user: userId,
-		course: courseId.toString(),
+		course: typeof courseId === 'string' ? parseInt(courseId) : courseId,
 		enrollmentSource: source,
 		isActive: true,
 		enrolledAt: new Date().toISOString()
@@ -39,9 +39,9 @@ export const checkEnrollmentStatus = (
 	isEnrolled: boolean;
 	enrollment?: CourseEnrollment;
 } => {
-	const courseIdStr = courseId.toString();
+	const courseIdNum = typeof courseId === 'string' ? parseInt(courseId) : courseId;
 	const enrollment = enrollments.find(
-		(e) => e.user === userId && e.course === courseIdStr && e.isActive
+		(e) => e.user === userId && (typeof e.course === 'number' ? e.course : e.course.id) === courseIdNum && e.isActive
 	);
 
 	return {
@@ -59,9 +59,8 @@ export const attachEnrollmentStatus = (
 	userId: string
 ): CatalogCourse[] => {
 	return courses.map((course) => {
-		const courseIdStr = course.id.toString();
 		const enrollment = enrollments.find(
-			(e) => e.user === userId && e.course === courseIdStr && e.isActive
+			(e) => e.user === userId && (typeof e.course === 'number' ? e.course : e.course.id) === course.id && e.isActive
 		);
 
 		return {
@@ -83,9 +82,9 @@ export const getEnrolledCourses = (
 ): CourseDepth1[] => {
 	const enrolledCourseIds = enrollments
 		.filter((e) => e.user === userId && e.isActive)
-		.map((e) => e.course);
+		.map((e) => typeof e.course === 'number' ? e.course : e.course.id);
 
-	return courses.filter((course) => enrolledCourseIds.includes(course.id.toString()));
+	return courses.filter((course) => enrolledCourseIds.includes(course.id));
 };
 
 /**
@@ -98,9 +97,9 @@ export const getUnenrolledCourses = (
 ): CourseDepth1[] => {
 	const enrolledCourseIds = enrollments
 		.filter((e) => e.user === userId && e.isActive)
-		.map((e) => e.course);
+		.map((e) => typeof e.course === 'number' ? e.course : e.course.id);
 
-	return courses.filter((course) => !enrolledCourseIds.includes(course.id.toString()));
+	return courses.filter((course) => !enrolledCourseIds.includes(course.id));
 };
 
 /**
