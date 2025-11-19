@@ -13,6 +13,11 @@
 	import { loginCopy } from '../login-copy';
 	import { PageSlugs } from '$lib/constants';
 	import { authClient } from '$lib/auth-client';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+
+	// Get redirect URL from query params
+	let redirectTo = $derived($page.url.searchParams.get('redirectTo') || PageSlugs.dashboard);
 
 	let email = $state('');
 	let password = $state('');
@@ -65,16 +70,16 @@
 					email,
 					password,
 					rememberMe
-					// callbackURL: PageSlugs.home
 				},
 				{
 					onRequest: () => {
 						// Loading state already set
 						console.log('loading...');
 					},
-					onSuccess: () => {
-						// Redirect handled by callbackURL
-						console.log('success');
+					onSuccess: async () => {
+						// Redirect after successful login
+						console.log('success, redirecting to:', redirectTo);
+						await goto(redirectTo);
 					},
 					onError: (ctx) => {
 						// Error will be handled in the catch block via the error variable
