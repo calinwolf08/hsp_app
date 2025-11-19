@@ -26,9 +26,10 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 		const enrollmentStatus =
 			(url.searchParams.get('enrollmentStatus') as 'all' | 'enrolled' | 'not-enrolled') || 'all';
 
-		// Fetch all courses
+		// Fetch all courses with depth 1 (basic course info, no activities)
 		const coursesResponse = await getCourses({
-			limit: 1000 // Get all courses for client-side filtering
+			limit: 1000, // Get all courses for client-side filtering
+			depth: 1
 		});
 
 		let courses = coursesResponse.docs;

@@ -1,4 +1,4 @@
-import type { Course, CourseEnrollment } from '../shared/types';
+import type { CourseDepth1, CourseEnrollment } from '../shared/types';
 
 /**
  * Filter options for catalog
@@ -17,9 +17,10 @@ export type SortOption = 'title-asc' | 'title-desc' | 'recent' | 'popular';
 
 /**
  * Course with enrollment status for catalog display
+ * Uses CourseDepth1 since catalog only needs basic course info (no deep nesting)
  */
 export type CatalogCourse = {
-	course: Course;
+	course: CourseDepth1;
 	isEnrolled: boolean;
 	enrollmentId?: string;
 	enrolledAt?: string;

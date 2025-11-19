@@ -1,10 +1,10 @@
-import type { Course } from '../../shared/types';
+import type { CourseDepth1 } from '../../shared/types';
 import type { CatalogFilters, SortOption, CatalogQuery, PaginationState } from '../types';
 
 /**
  * Filter courses by category IDs
  */
-export const filterByCategory = (courses: Course[], categoryIds: string[]): Course[] => {
+export const filterByCategory = (courses: CourseDepth1[], categoryIds: string[]): CourseDepth1[] => {
 	if (!categoryIds || categoryIds.length === 0) {
 		return courses;
 	}
@@ -17,7 +17,7 @@ export const filterByCategory = (courses: Course[], categoryIds: string[]): Cour
 /**
  * Filter courses by tag IDs
  */
-export const filterByTag = (courses: Course[], tagIds: string[]): Course[] => {
+export const filterByTag = (courses: CourseDepth1[], tagIds: string[]): CourseDepth1[] => {
 	if (!tagIds || tagIds.length === 0) {
 		return courses;
 	}
@@ -31,7 +31,7 @@ export const filterByTag = (courses: Course[], tagIds: string[]): Course[] => {
  * Search courses by name or description
  * Searches in: name, internal_name, slug
  */
-export const searchCourses = (courses: Course[], searchTerm: string): Course[] => {
+export const searchCourses = (courses: CourseDepth1[], searchTerm: string): CourseDepth1[] => {
 	if (!searchTerm || searchTerm.trim() === '') {
 		return courses;
 	}
@@ -50,7 +50,7 @@ export const searchCourses = (courses: Course[], searchTerm: string): Course[] =
 /**
  * Sort courses by specified option
  */
-export const sortCourses = (courses: Course[], sortBy: SortOption): Course[] => {
+export const sortCourses = (courses: CourseDepth1[], sortBy: SortOption): CourseDepth1[] => {
 	const sorted = [...courses];
 
 	switch (sortBy) {
@@ -80,7 +80,7 @@ export const sortCourses = (courses: Course[], sortBy: SortOption): Course[] => 
 /**
  * Apply all filters to course list
  */
-export const applyAllFilters = (courses: Course[], filters: CatalogFilters): Course[] => {
+export const applyAllFilters = (courses: CourseDepth1[], filters: CatalogFilters): CourseDepth1[] => {
 	let filtered = [...courses];
 
 	// Apply search
