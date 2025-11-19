@@ -1,9 +1,9 @@
-import type { LearningPath, CourseProgress } from '../types';
+import type { LearningPathDepth2, CourseProgress } from '../types';
 import { isItemCompleted } from './progress-calculator';
 import { ACCESS_TYPE } from '../constants';
 
 export const getNextAccessibleCourse = (
-	learningPath: LearningPath,
+	learningPath: LearningPathDepth2,
 	progressRecords: CourseProgress[]
 ): string | null => {
 	if (!isSequentialMode(learningPath)) {
@@ -36,13 +36,13 @@ export const getNextAccessibleCourse = (
 	return null; // All courses completed
 };
 
-export const isSequentialMode = (learningPath: LearningPath): boolean => {
+export const isSequentialMode = (learningPath: LearningPathDepth2): boolean => {
 	return learningPath.accessType === ACCESS_TYPE.SEQUENTIAL;
 };
 
 export const canAccessInSequence = (
 	courseId: string,
-	learningPath: LearningPath,
+	learningPath: LearningPathDepth2,
 	progressRecords: CourseProgress[]
 ): boolean => {
 	if (!isSequentialMode(learningPath)) {
@@ -62,7 +62,7 @@ export const canAccessInSequence = (
 
 const isAllPreviousCompleted = (
 	targetCourseId: string,
-	learningPath: LearningPath,
+	learningPath: LearningPathDepth2,
 	progressRecords: CourseProgress[]
 ): boolean => {
 	let foundTarget = false;
@@ -100,7 +100,7 @@ const isAllPreviousCompleted = (
 };
 
 export const getLockedCourses = (
-	learningPath: LearningPath,
+	learningPath: LearningPathDepth2,
 	progressRecords: CourseProgress[]
 ): string[] => {
 	if (!isSequentialMode(learningPath)) {
@@ -135,7 +135,7 @@ export const getLockedCourses = (
 };
 
 export const getUnlockedCourses = (
-	learningPath: LearningPath,
+	learningPath: LearningPathDepth2,
 	progressRecords: CourseProgress[]
 ): string[] => {
 	if (!isSequentialMode(learningPath)) {
