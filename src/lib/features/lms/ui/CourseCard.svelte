@@ -60,7 +60,7 @@
 					<span class="text-gray-600">Progress</span>
 					<span class="font-medium">{progress}%</span>
 				</div>
-				<ProgressBar percentage={progress} />
+				<ProgressBar percentage={progress ?? 0} />
 			</div>
 		{/if}
 

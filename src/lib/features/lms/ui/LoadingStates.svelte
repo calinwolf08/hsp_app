@@ -30,7 +30,7 @@
 {:else if variant === 'list'}
 	<div class={cn('space-y-4', className)} data-testid="list-skeleton">
 		{#each Array.from({ length: count }) as _, i}
-			<div key={i} class="animate-pulse">
+			<div class="animate-pulse">
 				<div class="flex items-center space-x-4">
 					<div class="h-12 w-12 rounded-full bg-gray-200"></div>
 					<div class="flex-1 space-y-2">

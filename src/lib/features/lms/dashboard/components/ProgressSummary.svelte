@@ -99,7 +99,7 @@
 				</div>
 				<ProgressCircle
 					percentage={stats.overallCompletionPercentage}
-					size="lg"
+					size={120}
 					showLabel={false}
 				/>
 			</div>

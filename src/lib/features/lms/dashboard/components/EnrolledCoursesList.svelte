@@ -112,7 +112,7 @@
 			{#each courses as dashboardCourse (dashboardCourse.course.id)}
 				<CourseCard
 					course={dashboardCourse.course}
-					enrollment={dashboardCourse.enrollment}
+					href="/courses/{dashboardCourse.course.id}"
 					progress={dashboardCourse.completionPercentage}
 					status={dashboardCourse.status}
 				/>

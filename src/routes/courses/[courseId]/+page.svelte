@@ -158,8 +158,9 @@
 
 			// Move to next activity if available
 			if (canNavigateNext && nextActivityId) {
+				const nextId = nextActivityId;
 				setTimeout(() => {
-					loadActivity(nextActivityId);
+					loadActivity(nextId);
 				}, 500);
 			}
 		} catch (err) {

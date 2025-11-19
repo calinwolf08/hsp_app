@@ -56,6 +56,7 @@ export type Course = {
 	published: boolean;
 	categories: string[];
 	tags: string[];
+	thumbnail?: string;
 	sections: Array<{
 		id: string;
 		section: string | Section;
