@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { Course } from '../../shared/types';
+	import type { CourseDepth1 } from '../../shared/types';
 	import { Button } from '$lib/components/ui/button';
 	import { catalogCopy } from '../catalog-copy';
 
 	interface Props {
-		course: Course;
+		course: CourseDepth1;
 		isEnrolled: boolean;
 		enrollmentId?: string;
 		onEnroll?: (courseId: string) => Promise<void>;
@@ -21,7 +21,7 @@
 
 		enrolling = true;
 		try {
-			await onEnroll(course.id);
+			await onEnroll(course.id.toString());
 		} finally {
 			enrolling = false;
 		}
@@ -35,7 +35,7 @@
 
 		enrolling = true;
 		try {
-			await onUnenroll(course.id);
+			await onUnenroll(course.id.toString());
 		} finally {
 			enrolling = false;
 		}

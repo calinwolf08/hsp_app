@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { Course, CourseEnrollment, CourseProgress, ProgressStatus } from '../../shared/types';
+	import type { CourseDepth1, CourseEnrollment, CourseProgress, ProgressStatus } from '../../shared/types';
 	import { Button } from '$lib/components/ui/button';
 	import { dashboardCopy } from '../dashboard-copy';
 
 	interface Props {
-		course: Course;
+		course: CourseDepth1;
 		enrollment: CourseEnrollment;
 		progress: CourseProgress | null;
 		completionPercentage: number;

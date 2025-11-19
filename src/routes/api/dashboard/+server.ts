@@ -2,7 +2,7 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getCourseEnrollments } from '$lib/features/lms/shared/api/enrollment-api';
 import { getMultipleProgress } from '$lib/features/lms/shared/api/progress-api';
-import { apiClient } from '$lib/features/lms/shared/api/client';
+import { getCourse } from '$lib/features/lms/shared/api/content-api';
 import {
 	combineCourseData,
 	calculateDashboardStats,
@@ -10,8 +10,7 @@ import {
 	filterCourses
 } from '$lib/features/lms/dashboard/utils/dashboard-data';
 import type { SortOption, FilterOption } from '$lib/features/lms/dashboard/types';
-import type { Course, CourseProgress } from '$lib/features/lms/shared/types';
-import { API_ENDPOINTS } from '$lib/features/lms/shared/constants';
+import type { CourseDepth1, CourseProgress } from '$lib/features/lms/shared/types';
 
 export const GET: RequestHandler = async ({ locals, url }) => {
 	// Check authentication
@@ -48,8 +47,8 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 		}
 
 		// Extract course IDs and courses from enrollments
-		const courseIds: (string | Course)[] = enrollments.map((e) => e.course);
-		const courses: Course[] = [];
+		const courseIds: (string | CourseDepth1)[] = enrollments.map((e) => e.course);
+		const courses: CourseDepth1[] = [];
 
 		// Fetch full course data for each enrollment
 		for (const enrollment of enrollments) {
@@ -57,8 +56,8 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 			if (typeof enrollment.course === 'object') {
 				courses.push(enrollment.course);
 			} else {
-				// Fetch course data
-				const course = await apiClient<Course>(`${API_ENDPOINTS.COURSES}/${enrollment.course}`);
+				// Fetch course data with depth 1 (basic course info)
+				const course = await getCourse(enrollment.course, 1);
 				courses.push(course);
 			}
 		}
@@ -66,7 +65,7 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 		// Fetch progress for all courses
 		const progressRecords = (await getMultipleProgress(
 			userId,
-			courseIds.map((c) => (typeof c === 'string' ? c : c.id)),
+			courseIds.map((c) => (typeof c === 'string' ? c : c.id.toString())),
 			'course'
 		)) as CourseProgress[];
 
