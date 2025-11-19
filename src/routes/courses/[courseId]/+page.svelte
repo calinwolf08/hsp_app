@@ -34,8 +34,8 @@
 	let currentPosition = $state(0);
 	let canNavigateNext = $state(false);
 	let canNavigatePrevious = $state(false);
-	let nextActivityId = $state<string | null>(null);
-	let previousActivityId = $state<string | null>(null);
+	let nextActivityId = $state<number | null>(null);
+	let previousActivityId = $state<number | null>(null);
 
 	let loading = $state(true);
 	let error = $state<string | null>(null);
@@ -87,7 +87,7 @@
 	};
 
 	// Load specific activity
-	const loadActivity = async (activityId: string | number) => {
+	const loadActivity = async (activityId: number) => {
 		try {
 			// Fetch activity content
 			const activityResponse = await fetch(`/api/activities/${activityId}`, {
@@ -128,8 +128,9 @@
 	};
 
 	// Navigation handlers
-	const handleNavigate = (activityId: string | number) => {
-		loadActivity(activityId);
+	const handleNavigate = (activityId: string) => {
+		// NavigationItem IDs are strings, convert to number for API
+		loadActivity(Number(activityId));
 	};
 
 	const handleNext = () => {
@@ -226,7 +227,7 @@
 						{completionPercentage}
 						{completedActivities}
 						{totalActivities}
-						currentActivityId={currentActivity.id}
+						currentActivityId={currentActivity.id.toString()}
 						onNavigate={handleNavigate}
 					/>
 				</aside>
