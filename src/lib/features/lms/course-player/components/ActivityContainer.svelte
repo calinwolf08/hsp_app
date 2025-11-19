@@ -83,15 +83,14 @@
 	const isCompleted = $derived(progress?.status === 'completed');
 
 	// Check if activity has populated ScormFile
-	const scormFile = $derived<ScormFile | null>(() => {
-		if (!isActivityDepth2(activity)) {
-			return null;
-		}
-		return typeof activity.ScormFile === 'object' ? activity.ScormFile : null;
-	});
+	const scormFile = $derived<ScormFile | null>(
+		isActivityDepth2(activity) && typeof activity.ScormFile === 'object'
+			? activity.ScormFile
+			: null
+	);
 
 	// Get activity type - for now, all activities are SCORM
-	const activityType = 'scorm';
+	const activityType: 'scorm' | 'video' | 'document' | 'survey' = 'scorm';
 
 	// Get activity type specific content
 	const getActivityContent = () => {
