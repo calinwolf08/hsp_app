@@ -1,0 +1,85 @@
+{
+  "testCourse": {
+    "id": "test-course-123",
+    "name": "Introduction to Testing",
+    "slug": "introduction-to-testing",
+    "description": {},
+    "published": true,
+    "categories": [],
+    "tags": [],
+    "sections": [
+      {
+        "id": "section-1",
+        "section": {
+          "id": "section-1",
+          "name": "Getting Started",
+          "internal_name": "getting-started",
+          "description": {},
+          "published": true,
+          "activities": [
+            {
+              "id": "activity-1",
+              "activity": {
+                "id": "activity-1",
+                "name": "Welcome to the Course",
+                "internal_name": "welcome",
+                "description": {},
+                "published": true,
+                "activityType": "document",
+                "documentUrl": "https://example.com/welcome.pdf",
+                "createdAt": "2024-01-01T00:00:00.000Z",
+                "updatedAt": "2024-01-01T00:00:00.000Z"
+              }
+            },
+            {
+              "id": "activity-2",
+              "activity": {
+                "id": "activity-2",
+                "name": "Course Overview",
+                "internal_name": "overview",
+                "description": {},
+                "published": true,
+                "activityType": "video",
+                "videoUrl": "https://example.com/overview.mp4",
+                "createdAt": "2024-01-01T00:00:00.000Z",
+                "updatedAt": "2024-01-01T00:00:00.000Z"
+              }
+            }
+          ],
+          "createdAt": "2024-01-01T00:00:00.000Z",
+          "updatedAt": "2024-01-01T00:00:00.000Z"
+        }
+      },
+      {
+        "id": "section-2",
+        "section": {
+          "id": "section-2",
+          "name": "Core Concepts",
+          "internal_name": "core-concepts",
+          "description": {},
+          "published": true,
+          "activities": [
+            {
+              "id": "activity-3",
+              "activity": {
+                "id": "activity-3",
+                "name": "Testing Fundamentals",
+                "internal_name": "fundamentals",
+                "description": {},
+                "published": true,
+                "activityType": "document",
+                "documentUrl": "https://example.com/fundamentals.pdf",
+                "createdAt": "2024-01-01T00:00:00.000Z",
+                "updatedAt": "2024-01-01T00:00:00.000Z"
+              }
+            }
+          ],
+          "createdAt": "2024-01-01T00:00:00.000Z",
+          "updatedAt": "2024-01-01T00:00:00.000Z"
+        }
+      }
+    ],
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+}
